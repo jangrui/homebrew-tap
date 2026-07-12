@@ -96,11 +96,13 @@ jobs:
             git checkout main
 
             # 已存在同名 PR 则跳过(避免重复开)。
+            # --auto:PR 创建后自动合并(squash)。需要仓库开启 auto-merge(已通过 API 开启)。
+            #         无分支保护规则时,PR 创建后立即合并。
             if gh pr view "$branch" --json number >/dev/null 2>&1; then
               echo "ℹ️  $name: PR 已存在,跳过"
             else
-              pr_body=$(printf '自动同步上游版本。\n\n- 类型: `%s`\n- 旧版本: `%s`\n- 新版本: `%s`\n\n由 GitHub Actions 自动生成。' "$kind" "$current" "$latest")
-              gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch" && echo "✅ PR 已创建"
+              pr_body=$(printf '自动同步上游版本。\n\n- 类型: `%s`\n- 旧版本: `%s`\n- 新版本: `%s`\n\n由 GitHub Actions 自动生成并合并。' "$kind" "$current" "$latest")
+              gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch" --auto --squash && echo "✅ PR 已创建并启用自动合并"
             fi
           }
 
@@ -113,4 +115,4 @@ jobs:
           done
 
           echo "============================================"
-          echo "完成。如有更新,请在 https://github.com/${GITHUB_REPOSITORY}/pulls review PR。"
+          echo "完成。如有更新,PR 会自动合并到 main(无需人工干预)。"
