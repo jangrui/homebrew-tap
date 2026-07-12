@@ -64,10 +64,14 @@ jobs:
             # livecheck 实测输出格式:  maccalendar: 1.6.11 ==> 1.6.11
             #   - ==> 左边是 cask 里写的当前版本,右边是上游最新版本
             #   - 取 ==> 后面的部分作为 latest
-            result=$(brew livecheck --cask "$cask" 2>&1 || true)
+            # 用 HOMEBREW_NO_COLOR 关掉颜色码,用 grep -i 容错大小写。
+            result=$(HOMEBREW_NO_COLOR=1 brew livecheck --cask "$cask" 2>&1 || true)
             echo "$result"
-            latest=$(echo "$result" | grep -E "^${cask}:" | sed -E 's/.*==> *//' | tail -1 | tr -d '[:space:]')
-            current=$(echo "$result" | grep -E "^${cask}:" | sed -E 's/^[^:]+: *//; s/ *==>.*//' | tail -1 | tr -d '[:space:]')
+            # 先剥 ANSI 转义码(双重保险,防 NO_COLOR 不生效),grep 加 || true 避免 set -e 下无匹配退出
+            clean=$(echo "$result" | sed -E 's/\x1b\[[0-9;]*m//g')
+            matched=$(echo "$clean" | grep -iE "^${cask}:" || true)
+            latest=$(echo "$matched" | sed -E 's/.*==> *//' | tail -1 | tr -d '[:space:]')
+            current=$(echo "$matched" | sed -E 's/^[^:]+: *//; s/ *==>.*//' | tail -1 | tr -d '[:space:]')
 
             if [ -z "$latest" ] || [ "$latest" = "N/A" ]; then
               echo "⚠️  $cask: 查不到最新版本,跳过"
