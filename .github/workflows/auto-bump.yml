@@ -14,8 +14,8 @@ name: Auto Bump
 
 on:
   schedule:
-    # 每 3 天 UTC 0:00 跑一次(北京/上海时间 08:00)。cron 只有 5 段。
-    - cron: "0 0 */3 * *"
+    # 每天北京时间 04:00 跑(= UTC 前一天 20:00)
+    - cron: "0 20 * * *"
   # 支持在 Actions 页面手动点 "Run workflow" 触发
   workflow_dispatch:
 
@@ -46,72 +46,70 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # 遍历仓库里的所有 cask。以后新增 cask 无需改这个 workflow,会自动覆盖。
           shopt -s nullglob
-          casks=()
-          for f in Casks/*.rb; do
-            casks+=("$(basename "$f" .rb)")
-          done
 
-          if [ ${#casks[@]} -eq 0 ]; then
-            echo "没有找到任何 cask,退出。"
-            exit 0
-          fi
+          # 通用处理函数:对单个 cask 或 formula 执行 livecheck + bump + PR。
+          # 参数:$1=类型(cask|formula)  $2=名字
+          bump_one() {
+            local kind="$1" name="$2"
+            local flag="--cask"; [ "$kind" = "formula" ] && flag="--formula"
+            local bump_cmd="bump-cask-pr"; [ "$kind" = "formula" ] && bump_cmd="bump-formula-pr"
 
-          echo "检测到 casks: ${casks[*]}"
-
-          for cask in "${casks[@]}"; do
             echo "============================================"
-            echo "Livecheck: $cask"
-            # livecheck 实测输出格式:  maccalendar: 1.6.11 ==> 1.6.11
-            #   - ==> 左边是 cask 里写的当前版本,右边是上游最新版本
-            #   - 取 ==> 后面的部分作为 latest
-            # 用 HOMEBREW_NO_COLOR 关掉颜色码,用 grep -i 容错大小写。
-            result=$(HOMEBREW_NO_COLOR=1 brew livecheck --cask "$cask" 2>&1 || true)
+            echo "Livecheck ($kind): $name"
+            # livecheck 输出格式:  <name>: <current> ==> <latest>
+            result=$(HOMEBREW_NO_COLOR=1 brew livecheck "$flag" "$name" 2>&1 || true)
             echo "$result"
-            # 先剥 ANSI 转义码(双重保险,防 NO_COLOR 不生效),grep 加 || true 避免 set -e 下无匹配退出
+            # 剥 ANSI 转义码(防 NO_COLOR 不生效)。grep 加 || true 避免 set -e 下无匹配退出。
             clean=$(echo "$result" | sed -E 's/\x1b\[[0-9;]*m//g')
-            matched=$(echo "$clean" | grep -iE "^${cask}:" || true)
+            matched=$(echo "$clean" | grep -iE "^${name}:" || true)
             latest=$(echo "$matched" | sed -E 's/.*==> *//' | tail -1 | tr -d '[:space:]')
             current=$(echo "$matched" | sed -E 's/^[^:]+: *//; s/ *==>.*//' | tail -1 | tr -d '[:space:]')
 
             if [ -z "$latest" ] || [ "$latest" = "N/A" ]; then
-              echo "⚠️  $cask: 查不到最新版本,跳过"
-              continue
+              echo "⚠️  $name: 查不到最新版本,跳过"
+              return
             fi
 
             echo "当前版本: $current / 最新版本: $latest"
 
             if [ "$current" = "$latest" ]; then
-              echo "✅ $cask 已是最新,无需更新"
-              continue
+              echo "✅ $name 已是最新,无需更新"
+              return
             fi
 
-            echo "🚀 $cask: $current → $latest,开始 bump"
-            # 注意:bump-cask-pr 自己开 PR 时要求 token 有 classic 'repo' scope,
-            # 而 GITHUB_TOKEN 用的是精细权限模型,会被拒绝("Scopes required: repo")。
-            # 解决:bump-cask-pr 只负责改文件+提交本地(--write-only --commit),
-            # 我们自己推分支 + 用 gh pr create 开 PR(认精细权限)。
-            brew bump-cask-pr "$cask" \
+            echo "🚀 $name: $current → $latest,开始 bump"
+            # bump-*-pr 自己开 PR 要 classic 'repo' scope,GITHUB_TOKEN 没有。
+            # 改用 --write-only --commit 让它只改文件+本地 commit,
+            # 我们自己 git push 分支 + gh pr create 开 PR(认精细权限)。
+            brew "$bump_cmd" "$name" \
               --version="$latest" \
               --message="auto-bump: $current → $latest" \
               --no-audit \
               --no-style \
               --write-only \
-              --commit || { echo "⚠️  bump-cask-pr --write-only 失败,见上方日志"; continue; }
+              --commit || { echo "⚠️  $bump_cmd --write-only 失败,见上方日志"; return; }
 
-            branch="bump-${cask}-${latest}"
+            branch="bump-${name}-${latest}"
             git checkout -B "$branch"
             git push --force-with-lease origin "$branch"
             git checkout main
 
-            # 已存在同名 PR 则跳过(避免重复开)。body 用 printf 生成,避开 YAML 多行缩进陷阱。
+            # 已存在同名 PR 则跳过(避免重复开)。
             if gh pr view "$branch" --json number >/dev/null 2>&1; then
-              echo "ℹ️  $cask: PR 已存在,跳过"
+              echo "ℹ️  $name: PR 已存在,跳过"
             else
-              pr_body=$(printf '自动同步上游版本。\n\n- 旧版本: `%s`\n- 新版本: `%s`\n\n由 GitHub Actions 自动生成(bump-cask-pr 改文件 + gh pr create 开 PR)。' "$current" "$latest")
-              gh pr create --title "bump ${cask} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch" && echo "✅ PR 已创建"
+              pr_body=$(printf '自动同步上游版本。\n\n- 类型: `%s`\n- 旧版本: `%s`\n- 新版本: `%s`\n\n由 GitHub Actions 自动生成。' "$kind" "$current" "$latest")
+              gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch" && echo "✅ PR 已创建"
             fi
+          }
+
+          # 遍历所有 cask 和 formula。以后新增配方无需改这个 workflow。
+          for f in Casks/*.rb; do
+            bump_one cask "$(basename "$f" .rb)"
+          done
+          for f in Formula/*.rb; do
+            bump_one formula "$(basename "$f" .rb)"
           done
 
           echo "============================================"
