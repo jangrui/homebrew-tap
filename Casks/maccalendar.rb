@@ -12,6 +12,14 @@ cask "maccalendar" do
   # 新版 Homebrew 要求用符号形式。
   depends_on macos: :sonoma
 
+  # livecheck: 告诉 brew "怎么查最新版本"。
+  # 配合 :github_releases 策略,brew 会查询 bylinxx/MacCalendar 的 GitHub Releases API,
+  # 自动拿到最新 tag。这是自动同步 workflow 的关键。
+  livecheck do
+    url :url
+    strategy :github_releases
+  end
+
   app "MacCalendar.app"
 
   zap trash: []

@@ -1,0 +1,93 @@
+# 自动同步上游版本到本 tap。
+#
+# 工作流程:
+#   1. 每 3 天(UTC 0:00)自动跑一次,也支持手动触发(workflow_dispatch)
+#   2. brew livecheck 查询每个 cask 的上游最新版本
+#   3. 若版本比 cask 里写的新,用 brew bump-cask-pr 自动算 sha256 + 开 PR
+#   4. 你收到 PR 通知,review 后点 Merge 即可
+#
+# 前置条件:
+#   - 仓库已在 GitHub(jangrui/homebrew-tap)
+#   - Settings → Actions → General → Workflow permissions 设为 "Read and write"
+#     (否则 bump-cask-pr 推不上分支)
+name: Auto Bump
+
+on:
+  schedule:
+    # 每 3 天 UTC 0:00 跑一次(北京/上海时间 08:00)。cron 只有 5 段。
+    - cron: "0 0 */3 * *"
+  # 支持在 Actions 页面手动点 "Run workflow" 触发
+  workflow_dispatch:
+
+permissions:
+  contents: write       # 推 commit 到 bump 分支
+  pull-requests: write  # 开 PR
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Checkout tap
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Detect & bump changed casks
+        env:
+          # 给 livecheck/bump-cask-pr 用的 GitHub token,带认证不会触发 API 限流
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # 遍历仓库里的所有 cask。以后新增 cask 无需改这个 workflow,会自动覆盖。
+          shopt -s nullglob
+          casks=()
+          for f in Casks/*.rb; do
+            casks+=("$(basename "$f" .rb)")
+          done
+
+          if [ ${#casks[@]} -eq 0 ]; then
+            echo "没有找到任何 cask,退出。"
+            exit 0
+          fi
+
+          echo "检测到 casks: ${casks[*]}"
+
+          for cask in "${casks[@]}"; do
+            echo "============================================"
+            echo "Livecheck: $cask"
+            # livecheck 输出格式: <cask_name> : <latest_version>
+            result=$(brew livecheck --cask "$cask" 2>&1 || true)
+            echo "$result"
+            latest=$(echo "$result" | awk -F' : ' "/^$cask/ {print \$2}" | tail -1 | tr -d '[:space:]')
+
+            if [ -z "$latest" ] || [ "$latest" = "N/A" ]; then
+              echo "⚠️  $cask: 查不到最新版本,跳过"
+              continue
+            fi
+
+            current=$(brew info --cask "$cask" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)*' | head -1 || true)
+            echo "当前版本: $current / 最新版本: $latest"
+
+            if [ "$current" = "$latest" ]; then
+              echo "✅ $cask 已是最新,无需更新"
+              continue
+            fi
+
+            echo "🚀 $cask: $current → $latest,开始 bump"
+            # bump-cask-pr 会:改 cask 文件的 version + sha256 + 推分支 + 开 PR
+            brew bump-cask-pr \
+              --cask "$cask" \
+              --version "$latest" \
+              --message "auto-bump: $current → $latest" \
+              --no-browse \
+              --online || echo "⚠️  bump-cask-pr 失败(可能 PR 已存在或 sha256 校验失败),见上方日志"
+          done
+
+          echo "============================================"
+          echo "完成。如有更新,请在 https://github.com/${GITHUB_REPOSITORY}/pulls review PR。"
