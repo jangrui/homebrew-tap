@@ -40,8 +40,10 @@ jobs:
 
       - name: Detect & bump changed casks
         env:
-          # 给 livecheck/bump-cask-pr 用的 GitHub token,带认证不会触发 API 限流
+          # livecheck / bump-cask-pr 用的 token(带认证,不触发 API 限流)
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # gh CLI 在 Actions 里不会自动用 GITHUB_TOKEN,必须显式设 GH_TOKEN
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           # 遍历仓库里的所有 cask。以后新增 cask 无需改这个 workflow,会自动覆盖。
