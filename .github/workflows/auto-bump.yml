@@ -97,13 +97,20 @@ jobs:
 
             # 已存在 OPEN 状态的同名 PR 则跳过(避免重复开)。
             # 注意:只查 --state open,否则已 merged 的旧 PR 也会被匹配到,导致永远跳过。
-            # --auto:PR 创建后自动合并(squash)。需要仓库开启 auto-merge(已通过 API 开启)。
-            #         无分支保护规则时,PR 创建后立即合并。
             if gh pr view "$branch" --json number --state open >/dev/null 2>&1; then
               echo "ℹ️  $name: 已有 OPEN 状态的 PR,跳过"
             else
               pr_body=$(printf '自动同步上游版本。\n\n- 类型: `%s`\n- 旧版本: `%s`\n- 新版本: `%s`\n\n由 GitHub Actions 自动生成并合并。' "$kind" "$current" "$latest")
-              gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch" --auto --squash && echo "✅ PR 已创建并启用自动合并"
+              pr_url=$(gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch")
+              echo "✅ PR 已创建: $pr_url"
+              # 自动合并(squash)。--auto:无分支保护时立即合并;有分支保护时等检查通过后合并。
+              # 需要 allow_auto_merge=true(已通过 API 开启)。
+              sleep 2
+              if gh pr merge "$branch" --squash --auto --delete-branch 2>&1; then
+                echo "✅ PR 已自动合并"
+              else
+                echo "⚠️  自动合并未成功(可能需要手动 Merge): $pr_url"
+              fi
             fi
           }
 
