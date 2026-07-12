@@ -61,17 +61,19 @@ jobs:
           for cask in "${casks[@]}"; do
             echo "============================================"
             echo "Livecheck: $cask"
-            # livecheck 输出格式: <cask_name> : <latest_version>
+            # livecheck 实测输出格式:  maccalendar: 1.6.11 ==> 1.6.11
+            #   - ==> 左边是 cask 里写的当前版本,右边是上游最新版本
+            #   - 取 ==> 后面的部分作为 latest
             result=$(brew livecheck --cask "$cask" 2>&1 || true)
             echo "$result"
-            latest=$(echo "$result" | awk -F' : ' "/^$cask/ {print \$2}" | tail -1 | tr -d '[:space:]')
+            latest=$(echo "$result" | grep -E "^${cask}:" | sed -E 's/.*==> *//' | tail -1 | tr -d '[:space:]')
+            current=$(echo "$result" | grep -E "^${cask}:" | sed -E 's/^[^:]+: *//; s/ *==>.*//' | tail -1 | tr -d '[:space:]')
 
             if [ -z "$latest" ] || [ "$latest" = "N/A" ]; then
               echo "⚠️  $cask: 查不到最新版本,跳过"
               continue
             fi
 
-            current=$(brew info --cask "$cask" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)*' | head -1 || true)
             echo "当前版本: $current / 最新版本: $latest"
 
             if [ "$current" = "$latest" ]; then
