@@ -25,8 +25,10 @@ class Wps365Cli < Formula
     bin.install "wps365-cli"
   end
 
+  # livecheck:显式指定上游仓库 URL(不用 url :url),
+  # 因为 formula 用了 on_intel 在 Linux Actions runner 上无有效 url,会导致 livecheck 失败。
   livecheck do
-    url :url
-    strategy :github_releases
+    url "https://github.com/wps365-open/cli/releases/latest"
+    strategy :github_latest
   end
 end
