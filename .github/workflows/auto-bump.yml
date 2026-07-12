@@ -86,18 +86,40 @@ jobs:
             fi
 
             echo "🚀 $cask: $current → $latest,开始 bump"
-            # bump-cask-pr 语法:cask 名是位置参数(不是 --cask)。
-            # --no-audit / --no-style:CI 里避免审计/风格检查因环境差异误报失败。
-            # --no-browse:打印 PR URL 而不是尝试开浏览器(CI 里没浏览器)。
-            # --no-fork:直接推到本仓库分支,不需要 fork(用 GITHUB_TOKEN 即可)。
+            # 注意:bump-cask-pr 自己开 PR 时要求 token 有 classic 'repo' scope,
+            # 而 GITHUB_TOKEN 用的是精细权限模型,会被拒绝("Scopes required: repo")。
+            # 解决:bump-cask-pr 只负责改文件+提交本地(--write-only --commit),
+            # 我们自己推分支 + 用 gh pr create 开 PR(gh 认 GITHUB_TOKEN 的精细权限)。
             brew bump-cask-pr "$cask" \
               --version="$latest" \
               --message="auto-bump: $current → $latest" \
               --no-audit \
               --no-style \
-              --no-browse \
-              --no-fork || echo "⚠️  bump-cask-pr 失败(可能 PR 已存在或 sha256 校验失败),见上方日志"
-          done
+              --write-only \
+              --commit || { echo "⚠️  bump-cask-pr --write-only 失败,见上方日志"; continue; }
+
+            # 推到 bump 分支 + 开 PR。变量里的 ! 需要关闭 histexpand。
+            set +H
+            branch="bump-${cask}-${latest}"
+            git checkout -B "$branch"
+            git push --force-with-lease origin "$branch"
+            git checkout main
+
+            # 已存在同名 PR 则跳过(避免重复开)
+            if gh pr view "$branch" --json number >/dev/null 2>&1; then
+              echo "ℹ️  $cask: PR 已存在,跳过"
+            else
+              gh pr create \
+                --title "bump ${cask} ${current} → ${latest}" \
+                --body "自动同步:上游 [$(echo $cask | tr 'a-z' 'A-Z')](https://github.com/bylinxx/MacCalendar) 发布了新版本。
+
+          - 旧版本: \`${current}\`
+          - 新版本: \`${latest}\`
+
+          由 GitHub Actions 自动生成(bump-cask-pr 改文件 + gh pr create 开 PR)。" \
+                --base main \
+                --head "$branch" && echo "✅ PR 已创建"
+            fi
 
           echo "============================================"
           echo "完成。如有更新,请在 https://github.com/${GITHUB_REPOSITORY}/pulls review PR。"
