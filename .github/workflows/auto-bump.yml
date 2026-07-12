@@ -86,13 +86,17 @@ jobs:
             fi
 
             echo "🚀 $cask: $current → $latest,开始 bump"
-            # bump-cask-pr 会:改 cask 文件的 version + sha256 + 推分支 + 开 PR
-            brew bump-cask-pr \
-              --cask "$cask" \
-              --version "$latest" \
-              --message "auto-bump: $current → $latest" \
+            # bump-cask-pr 语法:cask 名是位置参数(不是 --cask)。
+            # --no-audit / --no-style:CI 里避免审计/风格检查因环境差异误报失败。
+            # --no-browse:打印 PR URL 而不是尝试开浏览器(CI 里没浏览器)。
+            # --no-fork:直接推到本仓库分支,不需要 fork(用 GITHUB_TOKEN 即可)。
+            brew bump-cask-pr "$cask" \
+              --version="$latest" \
+              --message="auto-bump: $current → $latest" \
+              --no-audit \
+              --no-style \
               --no-browse \
-              --online || echo "⚠️  bump-cask-pr 失败(可能 PR 已存在或 sha256 校验失败),见上方日志"
+              --no-fork || echo "⚠️  bump-cask-pr 失败(可能 PR 已存在或 sha256 校验失败),见上方日志"
           done
 
           echo "============================================"
