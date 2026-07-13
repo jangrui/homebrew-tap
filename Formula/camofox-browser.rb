@@ -2,7 +2,7 @@
 #
 # 上游 https://github.com/redf0x1/camofox-browser 通过 npm 发布,没有二进制 release asset,
 # 因此这里用 Homebrew 的 npm 打包惯例(std_npm_args)从 registry 拉 tarball 并安装到独立 prefix。
-# 注意:这是纯 JS 包,需要 Node >= 20。运行时还需 Camoufox 引擎,首次启动会自动 `camoufox-js fetch`。
+# 注意:这是纯 JS 包,运行时还需 Camoufox 引擎,首次启动会自动 `camoufox-js fetch`。
 class CamofoxBrowser < Formula
   desc "面向 AI agent 的反检测浏览器服务器(Camoufox 引擎,REST API + CLI)"
   homepage "https://github.com/redf0x1/camofox-browser"
@@ -21,8 +21,9 @@ class CamofoxBrowser < Formula
     end
   end
 
-  # 上游 engines.node: ">=20"
-  depends_on "node@20"
+  # 上游 engines.node: ">=20" — 兼容 20/22/24/26,按 Homebrew 官方建议跟当前未 deprecated
+  # 的 node formula 走(node@20 已标记 2026-10-28 disabled,不绑死具体次版本号)。
+  depends_on "node"
 
   # std_npm_args:把 npm 包安装到 Homebrew prefix 下 libexec/,并把 bin/ 里的可执行 shim 链到 bin/。
   # 无需自己写 install。
