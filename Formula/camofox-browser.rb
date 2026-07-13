@@ -31,6 +31,21 @@ class CamofoxBrowser < Formula
   def install
     system "npm", "install", *std_npm_args
     bin.install_symlink libexec.glob("bin/*")
+
+    # 删掉当前 OS 下非 native 架构的 native module prebuild(argon2 等包会把所有架构 .node 都打进
+    # tarball,但运行时只会加载匹配本机架构的那个,删掉冗余的不影响功能)。
+    # 用 Hardware::CPU.arch 动态判断,确保 Intel 用户装时删 darwin-arm64、ARM 用户装时删 darwin-x64,
+    # 公式通用不绑死架构。这样 brew audit 的
+    # "Binaries built for a non-native architecture" 也会消失。
+    return unless OS.mac?
+
+    arch = Hardware::CPU.arch
+    Dir.glob(libexec/"lib/node_modules/**/prebuilds/darwin-*").each do |dir|
+      # 保留 native arch 的 prebuild,删掉其它 darwin-* arch 的 prebuild
+      next if dir.end_with?(arch.to_s)
+
+      rm_r dir
+    end
   end
 
   # 包暴露两个 bin:camofox-browser 和 camofox(见 package.json 的 bin 字段)。
