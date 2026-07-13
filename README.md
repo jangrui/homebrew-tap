@@ -8,16 +8,18 @@
 # 添加 tap
 brew tap jangrui/homebrew-tap
 
-# 安装(新版 brew 不需要 --cask 参数,会自动识别)
+# 安装 cask(新版 brew 不需要 --cask 参数,会自动识别)
 brew install maccalendar
 # 或者显式指定
 brew install --cask maccalendar
 
-# 升级
-brew upgrade maccalendar
+# 安装 formula
+brew install wps365-cli
+brew install camofox-browser
 
-# 卸载
-brew uninstall maccalendar
+# 升级 / 卸载
+brew upgrade <name>
+brew uninstall <name>
 ```
 
 ## 收录
@@ -54,7 +56,31 @@ homebrew-tap/
 
 ## 更新上游版本
 
-以 maccalendar 为例:
+**日常基本不用手动维护。** `.github/workflows/auto-bump.yml` 每天(北京时间 04:00)自动跑一次:
+对每个 cask / formula 跑 `brew livecheck` → 若有新版则 `brew bump-*-pr` 算出新 sha256 并自动开 PR → squash merge 到 `main`。手改配方前最好确认没人在同时跑 workflow。
+
+只在配方需要新增 / 大改时手动操作。
+
+### 新增配方
+
+```bash
+# 1. 创建文件
+#    Casks/<name>.rb      — GUI App,安装到 /Applications
+#    Formula/<name>.rb    — CLI 工具,链接到 brew --prefix/bin
+
+# 2. 在文件里写 url + sha256(下面有公式)
+
+# 3. 验证
+brew style Casks/<name>.rb        # rubocop 风格检查
+brew audit --new --cask <name>    # 或 --formula,跑 --new 时会做更严的检查
+brew livecheck --cask <name>      # 或 --formula,确认能拿到 latest
+
+# 4. 提交并推送,后续自动 bump workflow 会接管
+```
+
+### 算 sha256 的两种姿势
+
+**A. 上游发 GitHub Release(以 maccalendar 为例):**
 
 ```bash
 # 1. 查最新版本号和 dmg 下载地址
@@ -63,5 +89,29 @@ gh release view --repo bylinxx/MacCalendar
 # 2. 算 sha256(把 URL 替换成上一步拿到的)
 curl -sL "<dmg 下载 url>" | shasum -a 256
 
-# 3. 改 Casks/maccalendar.rb 里的 version 和 sha256,提交即可
+# 3. 改 Casks/maccalendar.rb 里的 version 和 sha256
 ```
+
+**B. 上游只发 npm(以 camofox-browser 为例):**
+
+```bash
+# 1. 拿 tarball URL 和 sha
+curl -s https://registry.npmjs.org/<pkg>/latest | python3 -c \
+  "import sys,json; d=json.load(sys.stdin); print(d['version']); print(d['dist']['tarball']); print(d['dist']['shasum'])"
+
+# 2. 验证 sha256(npm 的 shasum 是 sha1,brew 要 sha256,要重新算)
+curl -sL "<tarball url>" | shasum -a 256
+
+# 3. 改 Formula/<name>.rb 里的 url / sha256
+```
+
+### livecheck 策略
+
+配方里的 `livecheck` 块决定 workflow 怎么查最新版,跟上游发布方式要匹配:
+
+| 上游 | 策略 |
+|---|---|
+| GitHub Releases | `strategy :github_releases`(url 默认就是 `homepage` 的 GitHub 仓库) |
+| GitHub Releases 但 tag 没 `v` 前缀 | `strategy :github_releases`,配合 URL 模板 |
+| npm registry | `strategy :json` + `url "https://registry.npmjs.org/<pkg>/latest"`,block 里 `json["version"]` |
+| 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |
