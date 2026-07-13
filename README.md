@@ -34,13 +34,22 @@ brew uninstall maccalendar
 >
 > 本 tap 跟踪上游最新版本,并修正了语法。
 
+### Formula (CLI 工具)
+
+| 名称 | 说明 | 上游 |
+|---|---|---|
+| [wps365-cli](./Formula/wps365-cli.rb) | WPS 365 命令行客户端(Rust 预编译二进制) | [wps365-open/cli](https://github.com/wps365-open/cli) |
+| [camofox-browser](./Formula/camofox-browser.rb) | 面向 AI agent 的反检测浏览器服务器,Camoufox 引擎 + REST API + CLI | [redf0x1/camofox-browser](https://github.com/redf0x1/camofox-browser) |
+
 ## 目录结构
 
 ```
 homebrew-tap/
 ├── Casks/             # GUI App (brew install --cask xxx)
 │   └── maccalendar.rb
-└── Formula/           # 命令行工具 (brew install xxx) — 暂无,以后扩展
+└── Formula/           # 命令行工具 (brew install xxx)
+    ├── wps365-cli.rb
+    └── camofox-browser.rb
 ```
 
 ## 更新上游版本
