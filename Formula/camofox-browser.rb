@@ -25,10 +25,12 @@ class CamofoxBrowser < Formula
   # 的 node formula 走(node@20 已标记 2026-10-28 disabled,不绑死具体次版本号)。
   depends_on "node"
 
-  # std_npm_args:把 npm 包安装到 Homebrew prefix 下 libexec/,并把 bin/ 里的可执行 shim 链到 bin/。
-  # 无需自己写 install。
+  # std_npm_args 把 npm 装到 #{libexec}/,npm 在 #{libexec}/bin/ 下生成 shim(链到 node_modules 的 .js)。
+  # brew 默认不识别 libexec/bin,所以按 Homebrew 官方 Node-for-Formula-Authors 文档显式 glob 一遍
+  # 链到 bin/,免维护(以后包新增 bin 不用改公式)。
   def install
     system "npm", "install", *std_npm_args
+    bin.install_symlink libexec.glob("bin/*")
   end
 
   # 包暴露两个 bin:camofox-browser 和 camofox(见 package.json 的 bin 字段)。
