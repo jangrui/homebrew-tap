@@ -25,6 +25,22 @@ class CamofoxBrowser < Formula
   # 的 node formula 走(node@20 已标记 2026-10-28 disabled,不绑死具体次版本号)。
   depends_on "node"
 
+  # brew services 支持:camofox-browser 不带参数(或 serve)即前台启动 REST API 服务器,
+  # 监听 127.0.0.1:9377(loopback,无需 API key),并处理 SIGTERM 优雅退出 —— 正好适配 launchd。
+  # 注意:不能用 #{bin}/camofox-browser 这个 npm shim,它的 shebang 是 #!/usr/bin/env node,
+  # launchd 的 PATH 极简找不到 node;这里直接用 node 的 opt 路径跑 server 入口,最稳。
+  service do
+    run [formula_opt_bin("node")/"node",
+         opt_libexec/"lib/node_modules/camofox-browser/dist/src/server.js"]
+    keep_alive true
+    working_dir var
+    environment_variables(
+      PATH: "#{HOMEBREW_PREFIX}/opt/node/bin:#{HOMEBREW_PREFIX}/bin:#{HOMEBREW_PREFIX}/sbin:/usr/bin:/bin",
+    )
+    log_path var/"log/camofox-browser.log"
+    error_log_path var/"log/camofox-browser.log"
+  end
+
   # std_npm_args 把 npm 装到 #{libexec}/,npm 在 #{libexec}/bin/ 下生成 shim(链到 node_modules 的 .js)。
   # brew 默认不识别 libexec/bin,所以按 Homebrew 官方 Node-for-Formula-Authors 文档显式 glob 一遍
   # 链到 bin/,免维护(以后包新增 bin 不用改公式)。
