@@ -29,6 +29,7 @@ brew uninstall <name>
 | 名称 | 说明 | 上游 |
 |---|---|---|
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
+| [zcode](./Casks/zcode.rb) | Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent | [zcode.z.ai](https://zcode.z.ai) |
 
 > **为什么自建?** 原作者 `bylinxx/homebrew-tap` 的 cask 长期不更新:
 > 1. macOS 版本限制用了新版 Homebrew 已废弃的字符串语法,每次操作弹 deprecation warning
@@ -48,7 +49,8 @@ brew uninstall <name>
 ```
 homebrew-tap/
 ├── Casks/             # GUI App (brew install --cask xxx)
-│   └── maccalendar.rb
+│   ├── maccalendar.rb
+│   └── zcode.rb
 └── Formula/           # 命令行工具 (brew install xxx)
     ├── wps365-cli.rb
     └── camofox-browser.rb
@@ -114,4 +116,5 @@ curl -sL "<tarball url>" | shasum -a 256
 | GitHub Releases | `strategy :github_releases`(url 默认就是 `homepage` 的 GitHub 仓库) |
 | GitHub Releases 但 tag 没 `v` 前缀 | `strategy :github_releases`,配合 URL 模板 |
 | npm registry | `strategy :json` + `url "https://registry.npmjs.org/<pkg>/latest"`,block 里 `json["version"]` |
+| CDN 无 API,版本号只在网页发布(如 zcode) | `strategy :page_match` + 指向 changelog 页的 `url`,配合 `regex` 提取版本号 |
 | 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |
