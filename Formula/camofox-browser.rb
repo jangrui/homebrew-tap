@@ -57,8 +57,9 @@ class CamofoxBrowser < Formula
 
     arch = Hardware::CPU.arch
     Dir.glob(libexec/"lib/node_modules/**/prebuilds/darwin-*").each do |dir|
-      # 保留 native arch 的 prebuild,删掉其它 darwin-* arch 的 prebuild
-      next if dir.end_with?(arch.to_s)
+      # 用 basename 取目录名再判 arch(比直接 end_with? 整条路径更明确稳健),
+      # 保留 native arch 的 prebuild,删掉其它 darwin-* arch 的 prebuild。
+      next if File.basename(dir).end_with?(arch.to_s)
 
       rm_r dir
     end
