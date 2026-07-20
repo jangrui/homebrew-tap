@@ -7,8 +7,8 @@
 # dmg 实际托管在 filecdn.minimax.chat 公开 OSS 的 minimax-agent-prod bucket,
 # 内容由 app 自带 Squirrel.Mac + electron-updater generic provider 拉取
 # (app-update.yml 写 url: .../release,会在 release/ 下取 latest-mac.yml)。
-# 当前 OSS 上 latest-mac.yml 是 NoSuchKey(发布流水线 bug),所以 livecheck 退而求其次
-# 抓 changelog.md(zcode.rb 同一套路)。
+# livecheck 也直接读这个 latest-mac.yml —— 由上游发布流水线写,比 changelog.md 及时
+# (changelog 是事后补文档,几版之后才追上,实测滞后 > 1 个版本)。
 #
 # 这条 cask 因此存在两个局限:
 #   1. livecheck 只比对版本号,不校验 dmg 可用性 —— bump 阶段需手维护 url + sha256
@@ -24,13 +24,12 @@ cask "minimax-code" do
   desc "MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化"
   homepage "https://agent.minimaxi.com/"
 
-  # 上游 changelog 页(Mintlify 生成的 markdown 镜像)更新及时,format 是 `## vX.Y.Z — YYYY-MM-DD`,
-  # 拿第一个 v+数字串就行。App 自身 Info.plist 当前是 3.0.47,等 homebrew-tap auto-bump 跑起来后
-  # 才能扫到 3.0.51+ 的新版(写成 3.0.51 是手动初始化用的初始版本)。
+  # 直接读 OSS 上的 latest-mac.yml —— 这是 electron-updater 的 appcast,发布流水线写,
+  # 比 changelog.md 及时(实测 changelog 滞后 > 1 版)。brew 内置 :electron_builder strategy
+  # 默认从 yaml["version"] 取,正好对上 `version: X.Y.Z` 这一行。
   livecheck do
-    url "https://agent.minimaxi.com/docs/changelog.md"
-    strategy :page_match
-    regex(/v(\d+(?:\.\d+)+)/)
+    url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/latest-mac.yml"
+    strategy :electron_builder
   end
 
   # arm64-only 上游策略:Intel Mac 不发包,brew 原生报 "not supported on Intel"。
