@@ -52,12 +52,14 @@ jobs:
           # dmg 文件名含 build 号(例如 Qwen-1.0.5.164.dmg),bump-cask-pr 用 url 模板
           # 拼不出来,直接跑会 404。这里走自定义流程:
           #   1. livecheck 已经从 latest-mac.yml 拿到 version
-          #   2. arm64 / x64 两个架构分别重新拉 yml,取 files[].url(dmg 路径)
+          #   2. 重新拉 yml,从 files[] 里挑出 arm/non-arm dmg(按 -arm64.dmg 后缀归类,
+          #      其余 dmg 视为通用 fallback —— 上游有的 dmg 不带 -arm64 后缀、
+          #      但路径里嵌 arch 或者名字是基线 dmg)
           #   3. 下载 dmg 算 sha256
-          #   4. 直接 ruby 改 cask 文件(version + on_arm/on_intel 的 url + sha256)
+          #   4. 直接 ruby 改 cask 文件:
+          #      - 有 on_arm / on_intel 块(zcode / qwen):改块内 url + sha256
+          #      - 单份顶层 url + sha256(minimax-code 这种 arm64-only):改顶层
           #   5. 推分支(PR 由 bump_one 创建)
-          # 假设 livecheck url 是 <feed-root>/<arch>/latest-mac.yml,
-          # arm64 ↔ x64 互相替换即可拿另一架构的 feed。
           apply_electron_builder_bump() {
             local name="$1" latest="$2"
             local cask_path="Casks/${name}.rb"
@@ -66,65 +68,115 @@ jobs:
             [ -z "$feed_url" ] && { echo "⚠️  $name: 找不到 latest-mac.yml url"; return 1; }
             echo "🚀 $name: electron_builder 路径"
 
-            local arm_feed intel_feed
-            if [[ "$feed_url" == *"/arm64/"* ]]; then
-              arm_feed="$feed_url"
-              intel_feed="${feed_url/\/arm64\///x64/}"
-            elif [[ "$feed_url" == *"/x64/"* ]]; then
-              intel_feed="$feed_url"
-              arm_feed="${feed_url/\/x64\///arm64/}"
-            else
-              echo "⚠️  $name: feed url 不含 /arm64/ 或 /x64/,无法推导另一架构: $feed_url"
-              return 1
+            # 不假设 feed URL 含 /arm64/ 或 /x64/ 子目录(MiniMax Code 是 .../release/latest-mac.yml 单份,
+            # 所有架构 dmg 都在同一份 yml 的 files[] 里),从 yml files[] 自发现。
+            #
+            # 解析一份 yml,逐项返回 "<full-url>|<sha256>" 行,每行一个 dmg。
+            # 规则:
+            #   - url 含 "arm64"(含 -arm64-、-arm64.dmg):arm 架构
+            #   - url 含 "x64" / "x86_64":intel 架构
+            #   - 其他(.dmg 但没 arch 后缀):视为通用 fallback,默认归 intel(x86_64),
+            #     如果 cask 是 arm64-only(`depends_on arch: :arm64`)则归 arm
+            fetch_dmgs() {
+              local feed="$1" prefer_arm_only="$2"
+              local tmp_dmg tmp_sha pair base dmg_name arch_kind dmg_path dmg_url
+              local items=()
+              while IFS='|' read -r dmg_path sha; do
+                [ -z "$dmg_path" ] && continue
+                dmg_name="${dmg_path##*/}"
+                dmg_url="${feed%/latest-mac.yml}/$dmg_path"
+                if [[ "$dmg_name" == *"arm64"* ]]; then
+                  arch_kind="arm"
+                elif [[ "$dmg_name" == *"x64"* || "$dmg_name" == *"x86_64"* ]]; then
+                  arch_kind="intel"
+                else
+                  # 没 arch 后缀,按 cask 偏好分归
+                  arch_kind=$([ "$prefer_arm_only" = "true" ] && echo arm || echo intel)
+                fi
+                echo "${arch_kind}|${dmg_url}|${sha}"
+              done < <(curl -fsSL "$feed" | ruby -ryaml -e '
+                y = YAML.load(STDIN)
+                y["files"].to_a.each do |f|
+                  u = f["url"].to_s
+                  next unless u.end_with?(".dmg")
+                  s = f["sha512"].to_s
+                  # electron-updater 用 sha512,brew 要 sha256。
+                  # 实际上 bump 阶段直接 sha512 校验 dmg 完整性更准,
+                  # 但 brew cask DSL 只认 sha256,所以这里**重新下载 dmg 算 sha256**,
+                  # 我们只透传 url,download_step 重算 sha。
+                  puts "#{u}|#{s}"
+                end')
+            }
+
+            # 第二步:对 fetch_dmgs 输出的每一行(<arch>|<url>|<server-sha512>),
+            # 真下 dmg 算 sha256,替换 sha512 字段。
+            local prefer_arm_only="false"
+            if grep -q 'depends_on arch: :arm64' "$cask_path"; then
+              prefer_arm_only="true"
             fi
 
-            # 下载 dmg + 算 sha256。返回 "<full-url>|<sha256>"。
-            # 注意:必须先下到临时文件再算 sha,直接管道会让 ruby 退出时
-            # curl 写一半崩,sha 为空。
-            fetch_dmg() {
-              local feed="$1"
-              local dmg_path sha tmp full_url
-              dmg_path=$(curl -fsSL "$feed" | ruby -ryaml -e 'y=YAML.load(STDIN); puts y["files"].map{|f|f["url"]}.find{|u|u.end_with?(".dmg")}')
-              [ -z "$dmg_path" ] && { echo "⚠️  yml 里没找到 .dmg"; return 1; }
-              full_url="${feed%/latest-mac.yml}/$dmg_path"
-              echo "  → dmg: $full_url"
+            local arm_url="" arm_sha="" intel_url="" intel_sha=""
+            while IFS='|' read -r arch_kind dmg_url server_sha; do
+              [ -z "$dmg_url" ] && continue
+              echo "  → [$arch_kind] $dmg_url"
+              local tmp
               tmp=$(mktemp)
-              curl -fsSL "$full_url" -o "$tmp"
+              curl -fsSL "$dmg_url" -o "$tmp"
+              local sha
               sha=$(ruby -e "require 'digest'; puts Digest::SHA256.hexdigest(File.binread('$tmp'))")
               rm -f "$tmp"
-              echo "${full_url}|${sha}"
-            }
-            local arm_data intel_data
-            arm_data=$(fetch_dmg "$arm_feed") || return 1
-            intel_data=$(fetch_dmg "$intel_feed") || return 1
-            local arm_url="${arm_data%|*}" arm_sha="${arm_data#*|}"
-            local intel_url="${intel_data%|*}" intel_sha="${intel_data#*|}"
-            echo "  arm  sha256: $arm_sha"
-            echo "  intel sha256: $intel_sha"
+              case "$arch_kind" in
+                arm)
+                  arm_url="$dmg_url"; arm_sha="$sha" ;;
+                intel)
+                  intel_url="$dmg_url"; intel_sha="$sha" ;;
+              esac
+              echo "    sha256: $sha"
+            done < <(fetch_dmgs "$feed_url" "$prefer_arm_only")
 
-            # ruby 改 cask 文件:version + on_arm/on_intel 块各自的 url + sha256
+            # 至少要有一个 dmg;arm64-only cask 必须有 arm dmg。
+            if [ -z "$arm_url" ] && [ -z "$intel_url" ]; then
+              echo "⚠️  $name: yml 里没找到 .dmg"; return 1
+            fi
+            if [ "$prefer_arm_only" = "true" ] && [ -z "$arm_url" ]; then
+              echo "⚠️  $name: cask 是 arm64-only,但 yml 没出 arm64 dmg"; return 1
+            fi
+
+            # ruby 改 cask 文件:
+            #   - 有 on_arm / on_intel:改两个块内的 url + sha256
+            #   - 没这两块(顶层 url + sha256 形式,如 minimax-code):改顶层
             ruby -i -e '
-              path, version, arm_url, arm_sha, intel_url, intel_sha = ARGV
+              path, version, arm_url, arm_sha, intel_url, intel_sha, prefer_arm_only = ARGV
               src = File.read(path)
               src.sub!(/^  version "[^"]+"/, %Q(  version "#{version}"))
               arm_re   = /^(  on_arm do\n)(.*?)(^  end)$/m
               intel_re = /^(  on_intel do\n)(.*?)(^  end)$/m
-              src.sub!(arm_re) do |block|
-                b = block
-                b = b.sub(/url "[^"]+"/,     %Q(url "#{arm_url}"))
-                b = b.sub(/sha256 "[^"]+"/,  %Q(sha256 "#{arm_sha}"))
-                b
-              end
-              src.sub!(intel_re) do |block|
-                b = block
-                b = b.sub(/url "[^"]+"/,     %Q(url "#{intel_url}"))
-                b = b.sub(/sha256 "[^"]+"/,  %Q(sha256 "#{intel_sha}"))
-                b
+              if src.match?(arm_re) && src.match?(intel_re)
+                src.sub!(arm_re) do |block|
+                  b = block
+                  b = b.sub(/url "[^"]+"/,     %Q(url "#{arm_url}"))
+                  b = b.sub(/sha256 "[^"]+"/,  %Q(sha256 "#{arm_sha}"))
+                  b
+                end
+                src.sub!(intel_re) do |block|
+                  b = block
+                  b = b.sub(/url "[^"]+"/,     %Q(url "#{intel_url}"))
+                  b = b.sub(/sha256 "[^"]+"/,  %Q(sha256 "#{intel_sha}"))
+                  b
+                end
+              else
+                # 顶层 url + sha256 的形式(arm64-only cask 写法)。
+                # 如果只撕到一份 dmg,就拿它去写顶层 url + sha256;两份都有时优先 arm。
+                target_url = arm_url.empty? ? intel_url : arm_url
+                target_sha = arm_sha.empty? ? intel_sha : arm_sha
+                src.sub!(/^  url "[^"]+"/,     %Q(  url "#{target_url}"))
+                src.sub!(/^  sha256 "[^"]+"/,  %Q(  sha256 "#{target_sha}"))
               end
               File.write(path, src)
             ' "$cask_path" "$latest" \
               "$arm_url" "$arm_sha" \
-              "$intel_url" "$intel_sha"
+              "$intel_url" "$intel_sha" \
+              "$prefer_arm_only"
 
             # brew style 把关,过不了就别提交
             brew style "$cask_path" >/dev/null || { echo "⚠️  $name: brew style 失败,回滚"; git checkout -- "$cask_path"; return 1; }
