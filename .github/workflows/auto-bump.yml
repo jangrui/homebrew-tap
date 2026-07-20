@@ -106,7 +106,16 @@ jobs:
                     # 只对 path 段 percent-encode,保留目录分隔符。
                     # URI.encode_www_form_component 把空格编成 +,OSS 不认 + 当空格,
                     # 用 URI::DEFAULT_PARSER.escape(path, /[^a-zA-Z0-9._~:\/-]/) 更稳。
-                    encoded = base + "/" + URI::DEFAULT_PARSER.escape(u, /[^a-zA-Z0-9._~:\/-]/)
+                    #
+                    # 如果 f["url"] 本身就是绝对 URL(trae-work / zcode 合并 yaml 这种
+                    # feed 里 files[].url 已经是 cdn 完整路径),直接用,不再拼接 base。
+                    # 只有相对路径时才 base + escape(trae-work 旧 feed 的形态)。
+                    encoded =
+                      if u.match?(%r{\Ahttps?://})
+                        u
+                      else
+                        base + "/" + URI::DEFAULT_PARSER.escape(u, /[^a-zA-Z0-9._~:\/-]/)
+                      end
                     puts "#{arch}|#{encoded}|#{f["sha512"]}"
                   end
                 ' "$prefer_arm_only" "${feed_url%/latest-mac.yml}"
