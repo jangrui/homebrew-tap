@@ -16,9 +16,9 @@
 #      (depends_on arch: :arm64 触发,brew cask DSL 数组里用 :arm64/:x86_64,不用 :arm)
 cask "minimax-code" do
   version "3.0.52"
-  sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  sha256 "837fff1da1b5e472bd8e4deb0201426f2b66a266f0d15f6031933f28623429ed"
 
-  url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/MiniMax Code-3.0.52-arm64.dmg",
+  url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/MiniMax%20Code-#{version}-arm64.dmg",
       verified: "filecdn.minimax.chat/public/minimax-agent-prod/"
   name "MiniMax Code"
   desc "MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化"
