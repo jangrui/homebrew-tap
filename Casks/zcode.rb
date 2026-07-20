@@ -1,7 +1,7 @@
 cask "zcode" do
   arch arm: "arm64", intel: "x64"
 
-  version "3.5.0"
+  version "3.4.0"
 
   on_arm do
     sha256 "7a748829dbdd2b576c4acdc9bf8c8536431e9b38d0fa624f32f75ccd47cc9cde"
