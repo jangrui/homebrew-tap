@@ -71,45 +71,58 @@ jobs:
             # 不假设 feed URL 含 /arm64/ 或 /x64/ 子目录(MiniMax Code 是 .../release/latest-mac.yml 单份,
             # 所有架构 dmg 都在同一份 yml 的 files[] 里),从 yml files[] 自发现。
             #
-            # 解析一份 yml,逐项返回 "<full-url>|<sha256>" 行,每行一个 dmg。
+            # 解析一份 yml,逐项输出 "<arch>|<encoded-dmg-url>|<sha512>" 行,每行一个 dmg。
             # 规则:
-            #   - url 含 "arm64"(含 -arm64-、-arm64.dmg):arm 架构
-            #   - url 含 "x64" / "x86_64":intel 架构
-            #   - 其他(.dmg 但没 arch 后缀):视为通用 fallback,默认归 intel(x86_64),
-            #     如果 cask 是 arm64-only(`depends_on arch: :arm64`)则归 arm
+            #   - dmg 文件名含 "arm64":arm 架构
+            #   - dmg 文件名含 "x64" / "x86_64":intel 架构
+            #   - 其他(.dmg 但没 arch 后缀):按 cask 偏好分归
+            #     (depends_on arch: :arm64 → arm,否则 → intel)
+            #
+            # 重要:yml 里 dmg 字段值可能是 raw 字符串,含空格等未编码字符(如
+            # "MiniMax Code-3.0.52-arm64.dmg"),OSS 在路径含空格时按 raw key 查,会
+            # 返回空对象而不是 404 —— curl 看起来成功(`-f` 不报错),但 dmg 是 0 字节,
+            # sha256 算出来是空字符串 hash(e3b0c4...)。所以这里要在拼接前 percent
+            # encode(只编 path,保留 `/`,host 自动不编):
             fetch_dmgs() {
               local feed="$1" prefer_arm_only="$2"
-              local tmp_dmg tmp_sha pair base dmg_name arch_kind dmg_path dmg_url
-              local items=()
-              while IFS='|' read -r dmg_path sha; do
-                [ -z "$dmg_path" ] && continue
-                dmg_name="${dmg_path##*/}"
-                dmg_url="${feed%/latest-mac.yml}/$dmg_path"
-                if [[ "$dmg_name" == *"arm64"* ]]; then
-                  arch_kind="arm"
-                elif [[ "$dmg_name" == *"x64"* || "$dmg_name" == *"x86_64"* ]]; then
-                  arch_kind="intel"
-                else
-                  # 没 arch 后缀,按 cask 偏好分归
-                  arch_kind=$([ "$prefer_arm_only" = "true" ] && echo arm || echo intel)
-                fi
-                echo "${arch_kind}|${dmg_url}|${sha}"
-              done < <(curl -fsSL "$feed" | ruby -ryaml -e '
-                y = YAML.load(STDIN)
-                y["files"].to_a.each do |f|
-                  u = f["url"].to_s
-                  next unless u.end_with?(".dmg")
-                  s = f["sha512"].to_s
-                  # electron-updater 用 sha512,brew 要 sha256。
-                  # 实际上 bump 阶段直接 sha512 校验 dmg 完整性更准,
-                  # 但 brew cask DSL 只认 sha256,所以这里**重新下载 dmg 算 sha256**,
-                  # 我们只透传 url,download_step 重算 sha。
-                  puts "#{u}|#{s}"
-                end')
+              while IFS='|' read -r arch_kind dmg_url server_sha; do
+                [ -z "$dmg_url" ] && continue
+                echo "${arch_kind}|${dmg_url}|${server_sha}"
+              done < <(
+                curl -fsSL "$feed" | ruby -ryaml -ruri -e '
+                  y = YAML.load(STDIN)
+                  prefer_arm_only = ARGV[0] == "true"
+                  base = ARGV[1]
+                  y["files"].to_a.each do |f|
+                    u = f["url"].to_s
+                    next unless u.end_with?(".dmg")
+                    base_name = File.basename(u)
+                    arch =
+                      if base_name.include?("arm64") then "arm"
+                      elsif base_name.include?("x64") || base_name.include?("x86_64") then "intel"
+                      elsif prefer_arm_only then "arm"
+                      else "intel"
+                      end
+                    # 只对 path 段 percent-encode,保留目录分隔符。
+                    # URI.encode_www_form_component 把空格编成 +,OSS 不认 + 当空格,
+                    # 用 URI::DEFAULT_PARSER.escape(path, /[^a-zA-Z0-9._~:\/-]/) 更稳。
+                    encoded = base + "/" + URI::DEFAULT_PARSER.escape(u, /[^a-zA-Z0-9._~:\/-]/)
+                    puts "#{arch}|#{encoded}|#{f["sha512"]}"
+                  end
+                ' "$prefer_arm_only" "${feed_url%/latest-mac.yml}"
+              )
             }
 
-            # 第二步:对 fetch_dmgs 输出的每一行(<arch>|<url>|<server-sha512>),
-            # 真下 dmg 算 sha256,替换 sha512 字段。
+            # 第二步:对 fetch_dmgs 输出的每一行(<arch>|<encoded-url>|<sha512>),
+            # 真下 dmg 算 sha256,记录到对应 arch。
+            #
+            # 防守:防止 dmg 下载失败(URL 编码错/网络/OSS 404 等)导致 File.binread 拿到
+            # 空字节,sha256 被误算成空字符串 hash(e3b0c4...)。任何 dmg 必须满足:
+            #   - HTTP 2xx(`curl -f`)
+            #   - 本地文件 size > 0
+            #   - sha256 不是 e3b0c4... 占位
+            # 任一不满足就 fail 整个 cask,避免错写入 main。
+            local EMPTY_SHA="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
             local prefer_arm_only="false"
             if grep -q 'depends_on arch: :arm64' "$cask_path"; then
               prefer_arm_only="true"
@@ -121,17 +134,31 @@ jobs:
               echo "  → [$arch_kind] $dmg_url"
               local tmp
               tmp=$(mktemp)
-              curl -fsSL "$dmg_url" -o "$tmp"
-              local sha
+              if ! curl -fsSL "$dmg_url" -o "$tmp"; then
+                rm -f "$tmp"
+                echo "⚠️  $name: [$arch_kind] dmg 下载失败(curl exit 非 0): $dmg_url"
+                return 1
+              fi
+              local bytes sha
+              bytes=$(wc -c < "$tmp" | tr -d '[:space:]')
+              if [ "${bytes:-0}" -eq 0 ]; then
+                rm -f "$tmp"
+                echo "⚠️  $name: [$arch_kind] dmg 是空文件(URL 错或 OSS 返回空对象): $dmg_url"
+                return 1
+              fi
               sha=$(ruby -e "require 'digest'; puts Digest::SHA256.hexdigest(File.binread('$tmp'))")
               rm -f "$tmp"
+              if [ "$sha" = "$EMPTY_SHA" ]; then
+                echo "⚠️  $name: [$arch_kind] sha256 是空字符串占位,跳过"
+                return 1
+              fi
               case "$arch_kind" in
                 arm)
                   arm_url="$dmg_url"; arm_sha="$sha" ;;
                 intel)
                   intel_url="$dmg_url"; intel_sha="$sha" ;;
               esac
-              echo "    sha256: $sha"
+              echo "    sha256: $sha ($bytes bytes)"
             done < <(fetch_dmgs "$feed_url" "$prefer_arm_only")
 
             # 至少要有一个 dmg;arm64-only cask 必须有 arm dmg。
