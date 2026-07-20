@@ -107,8 +107,13 @@ jobs:
           # Ruby 合并:每个 manifest 里挑 .dmg 那条 entry,合并进统一 files[]。
           # 校验:version 必须一致;dmg 至少一条;url 必须以 .dmg 结尾。
           # 输出:用 Ruby YAML.dump,跟 trae-work 现有格式一致。
+          # 关键:env 变量必须用 `env FOO=bar ruby ...` 前缀形式(GitHub Actions 的
+          # bash -e 不支持续行末尾的 `VAR=val` 写进 ruby 进程 env)。
+          export PLATFORMS_JSON="$PLATFORMS"
+          export OUTPUT_PATH="$GITHUB_WORKSPACE/$OUTPUT_PATH"
           ruby -ryaml -rjson -e '
             plats = ENV["PLATFORMS_JSON"]
+            abort("PLATFORMS_JSON is nil") if plats.nil? || plats.empty?
             files = []
             arm_path = nil
             arm_sha  = nil
@@ -157,11 +162,9 @@ jobs:
             File.write(ENV["OUTPUT_PATH"], out.to_yaml)
             puts "--- merged yaml ---"
             puts File.read(ENV["OUTPUT_PATH"])
-          ' \
-            PLATFORMS_JSON="$PLATFORMS" \
-            OUTPUT_PATH="$GITHUB_WORKSPACE/$OUTPUT_PATH"
+          '
 
-          echo "version=$(ruby -ryaml -e 'puts YAML.load_file(ENV["OUTPUT_PATH"])["version"]' OUTPUT_PATH="$GITHUB_WORKSPACE/$OUTPUT_PATH")" >> "$GITHUB_OUTPUT"
+          echo "version=$(ruby -ryaml -e 'puts YAML.load_file(ENV["OUTPUT_PATH"])["version"]')" >> "$GITHUB_OUTPUT"
 
       - name: HEAD-validate every dmg URL
         env:
@@ -170,7 +173,9 @@ jobs:
           # 三道防线之一:每个 files[].url 必须 HEAD 200,防 cdn 异常导致空对象(0 字节)。
           # brew livecheck 自己不会下 dmg,apply_electron_builder_bump 才会下,
           # 但我们这一步就 fail 掉,避免下游拿到空 url 列表。
+          export OUTPUT_PATH="$GITHUB_WORKSPACE/$OUTPUT_PATH"
           ruby -ryaml -rnet/http -ruri -e '
+            abort("OUTPUT_PATH is nil") if ENV["OUTPUT_PATH"].nil? || ENV["OUTPUT_PATH"].empty?
             m = YAML.load_file(ENV["OUTPUT_PATH"])
             m["files"].to_a.each do |f|
               u = URI(f["url"].to_s)
@@ -182,7 +187,7 @@ jobs:
               puts "  HEAD #{code} #{u}"
               abort("dmg HEAD 非 2xx (#{code}): #{u}") unless code.start_with?("2")
             end
-          ' OUTPUT_PATH="$GITHUB_WORKSPACE/$OUTPUT_PATH"
+          '
 
       - name: Commit + push (no-op skip)
         env:
