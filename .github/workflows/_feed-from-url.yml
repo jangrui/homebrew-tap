@@ -112,8 +112,10 @@ jobs:
           export PLATFORMS_JSON="$PLATFORMS"
           export OUTPUT_PATH="$GITHUB_WORKSPACE/$OUTPUT_PATH"
           ruby -ryaml -rjson -e '
-            plats = ENV["PLATFORMS_JSON"]
-            abort("PLATFORMS_JSON is nil") if plats.nil? || plats.empty?
+            plats_raw = ENV["PLATFORMS_JSON"]
+            abort("PLATFORMS_JSON is nil") if plats_raw.nil? || plats_raw.empty?
+            plats = JSON.parse(plats_raw)
+            abort("PLATFORMS_JSON parse 失败: #{plats_raw.inspect}") unless plats.is_a?(Array)
             files = []
             arm_path = nil
             arm_sha  = nil
