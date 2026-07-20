@@ -1,0 +1,37 @@
+# zcode 的代理 feed 喂入器。
+#
+# 上游:https://zcode.z.ai/api/v1/releases/electron/manifest?platform=<plat>&channel=3
+#   - GET 直出 yaml,返回标准 electron-builder 格式(version / files / sha512 / releaseDate)
+#   - channel=1 (stable) 在客户端流量里滞后于 preview,所以这里用 channel=3 (preview)
+#     让 cask 提前跟上,客户端可用版本
+#   - 等上游正式发版后 stable 流也会追上,届时两条流汇合,行为收敛
+#
+# 消费:auto-bump.yml 的 apply_electron_builder_bump 会读 feeds/zcode/latest-mac.yml,
+#       用 version 比对 + 算 dmg sha256 → 改 Casks/zcode.rb。
+#
+# 触发:
+#   - schedule:UTC 20:05(北京时间 04:05),跟 feed-trae-work (20:01) / auto-bump (20:00) 错开
+#   - workflow_dispatch:手动验证用
+#
+# 跟 feed-trae-work.yml 的差异:zcode 是公开 GET,无须鉴权、无须反推 dmg URL,所以走
+# 通用 reusable workflow _feed-from-url.yml。trae-work 是私有 POST,继续单独存在。
+
+name: feed-zcode
+
+on:
+  schedule:
+    - cron: "5 20 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  feed:
+    uses: ./.github/workflows/_feed-from-url.yml
+    with:
+      name: zcode
+      upstream_url_template: 'https://zcode.z.ai/api/v1/releases/electron/manifest?platform={platform}&channel=3'
+      output_path: feeds/zcode/latest-mac.yml
+      platforms: '["darwin-aarch64","darwin-x86_64"]'
+      channel: '3'

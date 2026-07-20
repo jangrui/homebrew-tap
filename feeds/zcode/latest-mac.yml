@@ -1,0 +1,14 @@
+---
+version: 3.4.0
+files:
+- url: https://cdn-zcode.z.ai/zcode/electron/releases/3.4.0/macos-arm64/ZCode-3.4.0-mac-arm64.dmg
+  sha512: "+wNXf0mhFphsUTFzPbwTGgiwuzjJYWygjNRFk4eDqGphN0770v3GAnjQJi/uEtfdKoxPcFkThqQi4JrUdqIdZA=="
+  size: 162475755
+  blockMapSize: 0
+- url: https://cdn-zcode.z.ai/zcode/electron/releases/3.4.0/macos-x64/ZCode-3.4.0-mac-x64.dmg
+  sha512: "/++/1wq42UExAVFLWP2ztgWEeB6yF6weKTpaiNBxFM7mxfRVnTEgqCkiA2bFp8KireiwQwYQeKk3xOGpCsJp7A=="
+  size: 170750735
+  blockMapSize: 0
+path: https://cdn-zcode.z.ai/zcode/electron/releases/3.4.0/macos-arm64/ZCode-3.4.0-mac-arm64.zip
+sha512: n6Vj3Glh2Jl0sF6KDIqBLnUDymZyXbpJ9C7gyAGIMTL7rbp7j42F0T5pi4Wxv3eB/N8EQIJMDafRoh1vgljz9g==
+releaseDate: '2026-07-20T08:38:52.123Z'
