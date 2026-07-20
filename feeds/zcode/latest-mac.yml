@@ -1,5 +1,5 @@
 ---
-version: 3.4.0
+version: 3.5.0
 files:
 - url: https://cdn-zcode.z.ai/zcode/electron/releases/3.4.0/macos-arm64/ZCode-3.4.0-mac-arm64.dmg
   sha512: "+wNXf0mhFphsUTFzPbwTGgiwuzjJYWygjNRFk4eDqGphN0770v3GAnjQJi/uEtfdKoxPcFkThqQi4JrUdqIdZA=="
