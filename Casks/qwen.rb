@@ -16,25 +16,18 @@ cask "qwen" do
   desc "Alibaba 的 Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手"
   homepage "https://qwen.ai/"
 
-  # livecheck: 试过的所有自动源都不可用 —— skip,需要手维护。
+  # livecheck:用 app 内嵌的 electron-updater feed。
+  # 上游真正的 feed URL 写死在 main process(initializeAutoUpdater),
+  # 是 https://download.qwen.ai/macos/{arm64,x64}/latest-mac.yml,
+  # 不是 app-update.yml 里那个 cdnwl.qwenlm.ai 占位符。
+  # 用 :electron_builder 策略直接解 yaml 取 version。
   #
-  # 1. qwen.ai/download 是 SPA,dmg URL 是 React 后挂的,静态 HTML 里没有,
-  #    :page_match / :github_releases / :json 都拿不到版本号。
-  # 2. qwen.ai 没有 changelog / release-notes / updates 页(全 404)。
-  # 3. chat.qwen.ai/api/version 返回的是 web 端版本号(0.4.4),不是 desktop,
-  #    而且无视 platform/app/channel 等 query 参数。
-  # 4. App 里 app-update.yml 指向 https://cdnwl.qwenlm.ai/qwenchat-backend/test/
-  #    (electron-updater generic provider),但那里没有 latest-mac.yml,
-  #    说明上游 dmg 是手工上传、没启用 auto-update。
-  # 5. download.qwen.ai OSS bucket 目录列表被禁用,无法枚举 dmg。
-  # 6. CDN 也没有 redirect 端点(macos/latest, macos/stable 等全 404),
-  #    所以 :header_match 也无法从 Location header 抓版本号 —— brew livecheck
-  #    默认策略和 block 形式都拿不到上游新版本号。
-  #
-  # 维护流程:每几个月到 https://qwen.ai/download 点 macOS(ARM/x64)按钮,
-  # 从下载链接抓新版本号(同时下载 dmg 算 sha256),手动改 version + sha256。
+  # 注意:1.0.5 起 dmg 文件名变成 Qwen-{version}.{build}.dmg 含 build 号,
+  # 不可从 version 推导 —— bump-cask-pr 会拿到错的 url,sha256 也算不出,
+  # 所以 bump 阶段仍需手维护 dmg url + sha256。但 livecheck 至少能扫到新版。
   livecheck do
-    skip "上游无 changelog 页、download 页是 SPA、CDN 无 redirect / latest 端点、bucket 列表禁用 —— 无法自动;手维护流程见上方注释"
+    url "https://download.qwen.ai/macos/arm64/latest-mac.yml"
+    strategy :electron_builder
   end
 
   # App 的 Info.plist LSMinimumSystemVersion = 11.0(Big Sur)。

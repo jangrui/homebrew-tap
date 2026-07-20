@@ -48,6 +48,98 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
 
+          # electron-builder / generic-provider feed 的 cask:
+          # dmg 文件名含 build 号(例如 Qwen-1.0.5.164.dmg),bump-cask-pr 用 url 模板
+          # 拼不出来,直接跑会 404。这里走自定义流程:
+          #   1. livecheck 已经从 latest-mac.yml 拿到 version
+          #   2. arm64 / x64 两个架构分别重新拉 yml,取 files[].url(dmg 路径)
+          #   3. 下载 dmg 算 sha256
+          #   4. 直接 ruby 改 cask 文件(version + on_arm/on_intel 的 url + sha256)
+          #   5. 推分支(PR 由 bump_one 创建)
+          # 假设 livecheck url 是 <feed-root>/<arch>/latest-mac.yml,
+          # arm64 ↔ x64 互相替换即可拿另一架构的 feed。
+          apply_electron_builder_bump() {
+            local name="$1" latest="$2"
+            local cask_path="Casks/${name}.rb"
+            local feed_url
+            feed_url=$(grep -E 'url "[^"]*latest-mac\.yml"' "$cask_path" | head -1 | sed -E 's/.*url "([^"]+)".*/\1/')
+            [ -z "$feed_url" ] && { echo "⚠️  $name: 找不到 latest-mac.yml url"; return 1; }
+            echo "🚀 $name: electron_builder 路径"
+
+            local arm_feed intel_feed
+            if [[ "$feed_url" == *"/arm64/"* ]]; then
+              arm_feed="$feed_url"
+              intel_feed="${feed_url/\/arm64\///x64/}"
+            elif [[ "$feed_url" == *"/x64/"* ]]; then
+              intel_feed="$feed_url"
+              arm_feed="${feed_url/\/x64\///arm64/}"
+            else
+              echo "⚠️  $name: feed url 不含 /arm64/ 或 /x64/,无法推导另一架构: $feed_url"
+              return 1
+            fi
+
+            # 下载 dmg + 算 sha256。返回 "<full-url>|<sha256>"。
+            # 注意:必须先下到临时文件再算 sha,直接管道会让 ruby 退出时
+            # curl 写一半崩,sha 为空。
+            fetch_dmg() {
+              local feed="$1"
+              local dmg_path sha tmp full_url
+              dmg_path=$(curl -fsSL "$feed" | ruby -ryaml -e 'y=YAML.load(STDIN); puts y["files"].map{|f|f["url"]}.find{|u|u.end_with?(".dmg")}')
+              [ -z "$dmg_path" ] && { echo "⚠️  yml 里没找到 .dmg"; return 1; }
+              full_url="${feed%/latest-mac.yml}/$dmg_path"
+              echo "  → dmg: $full_url"
+              tmp=$(mktemp)
+              curl -fsSL "$full_url" -o "$tmp"
+              sha=$(ruby -e "require 'digest'; puts Digest::SHA256.hexdigest(File.binread('$tmp'))")
+              rm -f "$tmp"
+              echo "${full_url}|${sha}"
+            }
+            local arm_data intel_data
+            arm_data=$(fetch_dmg "$arm_feed") || return 1
+            intel_data=$(fetch_dmg "$intel_feed") || return 1
+            local arm_url="${arm_data%|*}" arm_sha="${arm_data#*|}"
+            local intel_url="${intel_data%|*}" intel_sha="${intel_data#*|}"
+            echo "  arm  sha256: $arm_sha"
+            echo "  intel sha256: $intel_sha"
+
+            # ruby 改 cask 文件:version + on_arm/on_intel 块各自的 url + sha256
+            ruby -i -e '
+              path, version, arm_url, arm_sha, intel_url, intel_sha = ARGV
+              src = File.read(path)
+              src.sub!(/^  version "[^"]+"/, %Q(  version "#{version}"))
+              arm_re   = /^(  on_arm do\n)(.*?)(^  end)$/m
+              intel_re = /^(  on_intel do\n)(.*?)(^  end)$/m
+              src.sub!(arm_re) do |block|
+                b = block
+                b = b.sub(/url "[^"]+"/,     %Q(url "#{arm_url}"))
+                b = b.sub(/sha256 "[^"]+"/,  %Q(sha256 "#{arm_sha}"))
+                b
+              end
+              src.sub!(intel_re) do |block|
+                b = block
+                b = b.sub(/url "[^"]+"/,     %Q(url "#{intel_url}"))
+                b = b.sub(/sha256 "[^"]+"/,  %Q(sha256 "#{intel_sha}"))
+                b
+              end
+              File.write(path, src)
+            ' "$cask_path" "$latest" \
+              "$arm_url" "$arm_sha" \
+              "$intel_url" "$intel_sha"
+
+            # brew style 把关,过不了就别提交
+            brew style "$cask_path" >/dev/null || { echo "⚠️  $name: brew style 失败,回滚"; git checkout -- "$cask_path"; return 1; }
+
+            local current
+            current=$(git show HEAD:"$cask_path" | grep -E '^  version "' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+            git add "$cask_path"
+            git commit -m "auto-bump($name): $current → $latest" >/dev/null
+            local branch="bump-${name}-${latest}"
+            git checkout -B "$branch"
+            git push --force-with-lease origin "$branch" >/dev/null
+            git checkout main >/dev/null
+            echo "✅ $name: 已推到分支 $branch"
+          }
+
           # 通用处理函数:对单个 cask 或 formula 执行 livecheck + bump + PR。
           # 参数:$1=类型(cask|formula)  $2=名字
           bump_one() {
@@ -78,25 +170,33 @@ jobs:
               return
             fi
 
-            echo "🚀 $name: $current → $latest,开始 bump"
-            # bump-*-pr 自己开 PR 要 classic 'repo' scope,GITHUB_TOKEN 没有。
-            # 改用 --write-only --commit 让它只改文件+本地 commit,
-            # 我们自己 git push 分支 + gh pr create 开 PR(认精细权限)。
-            # 注意:--no-style 只在 bump-cask-pr 支持,bump-formula-pr 不支持,
-            # 所以仅 cask 路径传,formula 路径省略(否则会报 invalid option)。
-            style_flag="--no-style"; [ "$kind" = "formula" ] && style_flag=""
-            brew "$bump_cmd" "$name" \
-              --version="$latest" \
-              --message="auto-bump: $current → $latest" \
-              --no-audit \
-              $style_flag \
-              --write-only \
-              --commit || { echo "⚠️  $bump_cmd --write-only 失败,见上方日志"; return; }
+            local branch="bump-${name}-${latest}"
 
-            branch="bump-${name}-${latest}"
-            git checkout -B "$branch"
-            git push --force-with-lease origin "$branch"
-            git checkout main
+            # electron-builder generic-provider feed 的 cask 走自定义流程。
+            # bump-cask-pr 用 url 模板拼路径,但这些 cask 的 dmg 名含 build 号,
+            # 模板拼出来的 url 404。判断条件:cask 里写了 strategy :electron_builder。
+            if [ "$kind" = "cask" ] && grep -q 'strategy :electron_builder' "Casks/${name}.rb"; then
+              apply_electron_builder_bump "$name" "$latest" || return
+            else
+              echo "🚀 $name: $current → $latest,开始 bump"
+              # bump-*-pr 自己开 PR 要 classic 'repo' scope,GITHUB_TOKEN 没有。
+              # 改用 --write-only --commit 让它只改文件+本地 commit,
+              # 我们自己 git push 分支 + gh pr create 开 PR(认精细权限)。
+              # 注意:--no-style 只在 bump-cask-pr 支持,bump-formula-pr 不支持,
+              # 所以仅 cask 路径传,formula 路径省略(否则会报 invalid option)。
+              style_flag="--no-style"; [ "$kind" = "formula" ] && style_flag=""
+              brew "$bump_cmd" "$name" \
+                --version="$latest" \
+                --message="auto-bump: $current → $latest" \
+                --no-audit \
+                $style_flag \
+                --write-only \
+                --commit || { echo "⚠️  $bump_cmd --write-only 失败,见上方日志"; return; }
+
+              git checkout -B "$branch"
+              git push --force-with-lease origin "$branch"
+              git checkout main
+            fi
 
             # 已存在 OPEN 状态的同名 PR 则跳过(避免重复开)。
             # 注意:只查 --state open,否则已 merged 的旧 PR 也会被匹配到,导致永远跳过。

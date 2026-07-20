@@ -119,5 +119,5 @@ curl -sL "<tarball url>" | shasum -a 256
 | GitHub Releases 但 tag 没 `v` 前缀 | `strategy :github_releases`,配合 URL 模板 |
 | npm registry | `strategy :json` + `url "https://registry.npmjs.org/<pkg>/latest"`,block 里 `json["version"]` |
 | CDN 无 API,版本号只在网页发布(如 zcode) | `strategy :page_match` + 指向 changelog 页的 `url`,配合 `regex` 提取版本号 |
-| CDN 直发 dmg/zip,版本号嵌在文件名但无 redirect(如 qwen) | `livecheck { skip "..." }` —— 上游没有 latest/changelog/API 端点,brew 无法自动提版本号,需手维护 |
+| electron-updater app 但 dmg 文件名含 build 号、无法从 version 推导(如 qwen) | `strategy :electron_builder` + `url` 指向 `latest-mac.yml`(feed URL 通常写死在 main process,不是 `app-update.yml`)— livecheck 可自动扫到新版本,但 bump 阶段 dmg url/sha256 仍需手维护 |
 | 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |
