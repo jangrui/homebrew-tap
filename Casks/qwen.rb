@@ -1,15 +1,15 @@
 cask "qwen" do
-  version "1.0.2.6"
+  version "1.0.5"
 
   on_arm do
-    sha256 "dc55f90cb8ad04e0d1d6f2f1e58939512615ad143bb3402eeaed929dc6a4f0fd"
+    sha256 ""
 
-    url "https://download.qwen.ai/macos/arm64/Qwen-#{version}-release-mac-arm64.dmg"
+    url ""
   end
   on_intel do
-    sha256 "91360d2c7381346a94db3f9d2dc34a26c640d0de4146be894e00f20df9b8893f"
+    sha256 "20e51560de08f626419711c9ac6cd81184f5e0fb98980b978310fdd81742a7cc"
 
-    url "https://download.qwen.ai/macos/x64/Qwen-#{version}-release-mac-x64.dmg"
+    url "https://download.qwen.ai/macos/arm64/Qwen-1.0.5.164.dmg"
   end
 
   name "Qwen"
