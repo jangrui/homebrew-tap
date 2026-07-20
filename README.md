@@ -31,6 +31,7 @@ brew uninstall <name>
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
+| [trae-work](./Casks/trae-work.rb) | byteDance TRAE Work 桌面端,AI agent 三模式(work/code/design),Web/Desktop/Mobile 跨端 | [trae.ai](https://www.trae.ai/) |
 | [zcode](./Casks/zcode.rb) | Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent | [zcode.z.ai](https://zcode.z.ai) |
 
 > **为什么自建?** 原作者 `bylinxx/homebrew-tap` 的 cask 长期不更新:
@@ -54,10 +55,14 @@ homebrew-tap/
 │   ├── maccalendar.rb
 │   ├── minimax-code.rb
 │   ├── qwen.rb
+│   ├── trae-work.rb
 │   └── zcode.rb
-└── Formula/           # 命令行工具 (brew install xxx)
-    ├── wps365-cli.rb
-    └── camofox-browser.rb
+├── Formula/           # 命令行工具 (brew install xxx)
+│   ├── wps365-cli.rb
+│   └── camofox-browser.rb
+└── feeds/             # 自维护 electron-builder feed
+    └── trae-work/
+        └── latest-mac.yml  # 由 .github/workflows/feed-trae-work.yml 每天喂入
 ```
 
 ## 更新上游版本
@@ -122,5 +127,6 @@ curl -sL "<tarball url>" | shasum -a 256
 | npm registry | `strategy :json` + `url "https://registry.npmjs.org/<pkg>/latest"`,block 里 `json["version"]` |
 | CDN 无 API,版本号只在网页发布(如 zcode) | `strategy :page_match` + 指向 changelog 页的 `url`,配合 `regex` 提取版本号 |
 | electron-updater app 但 dmg 文件名含 build 号、无法从 version 推导(如 qwen) | `strategy :electron_builder` + `url` 指向 `latest-mac.yml`(feed URL 通常写死在 main process,不是 `app-update.yml`)— livecheck 可自动扫到新版本,但 bump 阶段 dmg url/sha256 仍需手维护 |
+| 上游 update 完全私有、无任何公开 feed(如 trae-work) | `strategy :electron_builder` + `url` 指向本仓库 `feeds/<name>/latest-mac.yml`(由配套的 `feed-<name>.yml` workflow 每天喂入:转 byteDance 自家 POST API 响应为标准 yaml)→ 全自动,无需人手。cask 的 `version` 用 byteDance 内部 build 号(而非公开 marketing version),这样 `#{version}` 模板能拼出真实 dmg CDN 路径 |
 | CDN 无 API、无公开 feed、版本号只在文档站发布(如 zcode、minimax-code) | `strategy :page_match` + 指向 changelog 页的 `url`(Mintlify 站点可优先用 `/docs/changelog.md` markdown 镜像),配合 `regex` 提取 `vX.Y.Z` |
 | 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |

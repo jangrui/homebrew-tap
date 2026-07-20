@@ -1,0 +1,13 @@
+version: 2.3.56914
+files:
+  - url: TRAE_Work-darwin-arm64-2.3.56914.dmg
+    sha512: 6a3895b13c321bff9c2e7acede93509da35dc11146e4f1e08cf2b845b5aa6fa93303edf330d10a000448d6b2c97c08e48d7c7eebbe956a1e785c648593cc84a1
+    size: 388520222
+    blockMapSize: 0
+  - url: TRAE_Work-darwin-x64-2.3.56914.dmg
+    sha512: 206cc72ecea0ca9b53c5d6126afb1bef73360ccfff605dc8e4e102b45b8134330af46381a90fb7009c18611154641a9fb799f3cdacbcd2843c3507b2ac20bb3d
+    size: 413138231
+    blockMapSize: 0
+path: TRAE_Work-darwin-arm64-2.3.56914.dmg
+sha512: 6a3895b13c321bff9c2e7acede93509da35dc11146e4f1e08cf2b845b5aa6fa93303edf330d10a000448d6b2c97c08e48d7c7eebbe956a1e785c648593cc84a1
+releaseDate: '2026-07-18T07:45:28.000Z'
