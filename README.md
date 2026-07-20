@@ -29,6 +29,7 @@ brew uninstall <name>
 | 名称 | 说明 | 上游 |
 |---|---|---|
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
+| [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
 | [zcode](./Casks/zcode.rb) | Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent | [zcode.z.ai](https://zcode.z.ai) |
 
@@ -51,6 +52,7 @@ brew uninstall <name>
 homebrew-tap/
 ├── Casks/             # GUI App (brew install --cask xxx)
 │   ├── maccalendar.rb
+│   ├── minimax-code.rb
 │   ├── qwen.rb
 │   └── zcode.rb
 └── Formula/           # 命令行工具 (brew install xxx)
@@ -120,4 +122,5 @@ curl -sL "<tarball url>" | shasum -a 256
 | npm registry | `strategy :json` + `url "https://registry.npmjs.org/<pkg>/latest"`,block 里 `json["version"]` |
 | CDN 无 API,版本号只在网页发布(如 zcode) | `strategy :page_match` + 指向 changelog 页的 `url`,配合 `regex` 提取版本号 |
 | electron-updater app 但 dmg 文件名含 build 号、无法从 version 推导(如 qwen) | `strategy :electron_builder` + `url` 指向 `latest-mac.yml`(feed URL 通常写死在 main process,不是 `app-update.yml`)— livecheck 可自动扫到新版本,但 bump 阶段 dmg url/sha256 仍需手维护 |
+| CDN 无 API、无公开 feed、版本号只在文档站发布(如 zcode、minimax-code) | `strategy :page_match` + 指向 changelog 页的 `url`(Mintlify 站点可优先用 `/docs/changelog.md` markdown 镜像),配合 `regex` 提取 `vX.Y.Z` |
 | 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |
