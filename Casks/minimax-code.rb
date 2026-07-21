@@ -15,10 +15,10 @@
 #   2. x64 dmg 上游根本不发,Intel 用户 brew install 会报 "not supported on Intel"
 #      (depends_on arch: :arm64 触发,brew cask DSL 数组里用 :arm64/:x86_64,不用 :arm)
 cask "minimax-code" do
-  version "3.0.52"
-  sha256 "837fff1da1b5e472bd8e4deb0201426f2b66a266f0d15f6031933f28623429ed"
+  version "3.0.53"
+  sha256 "ccb1394677fb2ced89c27e3f7c91e7e908f07ffa88b68069822b92ac1dabca51"
 
-  url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/MiniMax%20Code-#{version}-arm64.dmg",
+  url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/MiniMax%20Code-3.0.53-arm64.dmg",
       verified: "filecdn.minimax.chat/public/minimax-agent-prod/"
   name "MiniMax Code"
   desc "MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化"
