@@ -18,20 +18,12 @@ cask "zcode" do
   desc "Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent"
   homepage "https://zcode.z.ai/"
 
-  # livecheck: 上游 zcode.z.ai/api/v1/releases/electron/manifest?channel=3 (preview)
-  # 返回标准 electron-builder yaml,但形态是每 platform 一份 yaml,不利于 brew livecheck
-  # 直接消费。所以走"自建代理 feed"模式:
-  #   1. feed-zcode.yml 每天把两份 manifest 合并成 feeds/zcode/latest-mac.yml,推到 main
-  #   2. 这里 livecheck 指 raw GitHub 的这份 yaml,brew livecheck :electron_builder
-  #      读 yaml["version"] 拿到 preview 流最新版本号
-  # 选 channel=3 (preview) 是因为 stable 流在客户端侧滞后于 preview;详细取舍见
-  # README 的 livecheck 策略表。
   livecheck do
-    url "https://raw.githubusercontent.com/jangrui/homebrew-tap/main/feeds/zcode/latest-mac.yml"
-    strategy :electron_builder
+    url "https://zcode.z.ai/api/v1/releases/electron/manifest?platform=darwin-aarch64&channel=3"
+    strategy :page_match
+    regex(/^version:\s*v?(\d+(?:\.\d+)+)\s*$/i)
   end
 
-  # App 的 LSMinimumSystemVersion = 12.0
   depends_on macos: :monterey
 
   app "ZCode.app"
