@@ -1,27 +1,13 @@
-# 自动同步上游版本到本 tap。
-#
-# 工作流程:
-#   1. 每 3 天(UTC 0:00)自动跑一次,也支持手动触发(workflow_dispatch)
-#   2. brew livecheck 查询每个 cask 的上游最新版本
-#   3. 若版本比 cask 里写的新,用 brew bump-cask-pr 自动算 sha256 + 开 PR
-#   4. 你收到 PR 通知,review 后点 Merge 即可
-#
-# 前置条件:
-#   - 仓库已在 GitHub(jangrui/homebrew-tap)
-#   - Settings → Actions → General → Workflow permissions 设为 "Read and write"
-#     (否则 bump-cask-pr 推不上分支)
 name: Auto Bump
 
 on:
   schedule:
-    # 每天北京时间 04:00 跑(= UTC 前一天 20:00)
     - cron: "0 20 * * *"
-  # 支持在 Actions 页面手动点 "Run workflow" 触发
   workflow_dispatch:
 
 permissions:
-  contents: write       # 推 commit 到 bump 分支
-  pull-requests: write  # 开 PR
+  contents: write
+  pull-requests: write
 
 jobs:
   bump:
@@ -40,49 +26,42 @@ jobs:
 
       - name: Detect & bump changed casks
         env:
-          # livecheck / bump-cask-pr 用的 token(带认证,不触发 API 限流)
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # gh CLI 在 Actions 里不会自动用 GITHUB_TOKEN,必须显式设 GH_TOKEN
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           shopt -s nullglob
 
-          # electron-builder / generic-provider feed 的 cask:
-          # dmg 文件名含 build 号(例如 Qwen-1.0.5.164.dmg),bump-cask-pr 用 url 模板
-          # 拼不出来,直接跑会 404。这里走自定义流程:
-          #   1. livecheck 已经从 latest-mac.yml 拿到 version
-          #   2. 重新拉 yml,从 files[] 里挑出 arm/non-arm dmg(按 -arm64.dmg 后缀归类,
-          #      其余 dmg 视为通用 fallback —— 上游有的 dmg 不带 -arm64 后缀、
-          #      但路径里嵌 arch 或者名字是基线 dmg)
-          #   3. 下载 dmg 算 sha256
-          #   4. 直接 ruby 改 cask 文件:
-          #      - 有 on_arm / on_intel 块(zcode / qwen):改块内 url + sha256
-          #      - 单份顶层 url + sha256(minimax-code 这种 arm64-only):改顶层
-          #   5. 推分支(PR 由 bump_one 创建)
           apply_electron_builder_bump() {
             local name="$1" latest="$2"
             local cask_path="Casks/${name}.rb"
             local feed_url
-            feed_url=$(grep -E 'url "[^"]*latest-mac\.yml"' "$cask_path" | head -1 | sed -E 's/.*url "([^"]+)".*/\1/')
-            [ -z "$feed_url" ] && { echo "⚠️  $name: 找不到 latest-mac.yml url"; return 1; }
-            echo "🚀 $name: electron_builder 路径"
+            feed_url=$(awk '
+              /livecheck do/ {in_lc=1; next}
+              in_lc && /^  end/ {in_lc=0; next}
+              in_lc && /url "[^"]+"/ {
+                match($0, /url "[^"]+"/)
+                url = substr($0, RSTART+5, RLENGTH-6)
+                print url; exit
+              }
+            ' "$cask_path")
+            if [ -z "$feed_url" ]; then
+              feed_url=$(grep -E 'url "[^"]*latest-mac\.yml"' "$cask_path" | head -1 | sed -E 's/.*url "([^"]+)".*/\1/')
+            fi
+            [ -z "$feed_url" ] && { echo "⚠️  $name: 找不到 feed url(cask 没有 livecheck 块,也没有 latest-mac.yml)"; return 1; }
+            echo "🚀 $name: electron_builder 路径 (feed=$feed_url)"
 
-            # 不假设 feed URL 含 /arm64/ 或 /x64/ 子目录(MiniMax Code 是 .../release/latest-mac.yml 单份,
-            # 所有架构 dmg 都在同一份 yml 的 files[] 里),从 yml files[] 自发现。
-            #
-            # 解析一份 yml,逐项输出 "<arch>|<encoded-dmg-url>|<sha512>" 行,每行一个 dmg。
-            # 规则:
-            #   - dmg 文件名含 "arm64":arm 架构
-            #   - dmg 文件名含 "x64" / "x86_64":intel 架构
-            #   - 其他(.dmg 但没 arch 后缀):按 cask 偏好分归
-            #     (depends_on arch: :arm64 → arm,否则 → intel)
-            #
-            # 重要:yml 里 dmg 字段值可能是 raw 字符串,含空格等未编码字符(如
-            # "MiniMax Code-3.0.52-arm64.dmg"),OSS 在路径含空格时按 raw key 查,会
-            # 返回空对象而不是 404 —— curl 看起来成功(`-f` 不报错),但 dmg 是 0 字节,
-            # sha256 算出来是空字符串 hash(e3b0c4...)。所以这里要在拼接前 percent
-            # encode(只编 path,保留 `/`,host 自动不编):
+            local intel_feed_url=""
+            if grep -qE 'on_arm do' "$cask_path" && grep -qE 'on_intel do' "$cask_path" \
+               && echo "$feed_url" | grep -qE 'darwin-(aarch64|x86_64)'; then
+              if echo "$feed_url" | grep -q 'darwin-aarch64'; then
+                intel_feed_url="${feed_url/darwin-aarch64/darwin-x86_64}"
+              elif echo "$feed_url" | grep -q 'darwin-x86_64'; then
+                intel_feed_url="${feed_url/darwin-x86_64/darwin-aarch64}"
+              fi
+              [ -n "$intel_feed_url" ] && echo "    + intel fallback feed: $intel_feed_url"
+            fi
+
             fetch_dmgs() {
               local feed="$1" prefer_arm_only="$2"
               while IFS='|' read -r arch_kind dmg_url server_sha; do
@@ -103,13 +82,6 @@ jobs:
                       elsif prefer_arm_only then "arm"
                       else "intel"
                       end
-                    # 只对 path 段 percent-encode,保留目录分隔符。
-                    # URI.encode_www_form_component 把空格编成 +,OSS 不认 + 当空格,
-                    # 用 URI::DEFAULT_PARSER.escape(path, /[^a-zA-Z0-9._~:\/-]/) 更稳。
-                    #
-                    # 如果 f["url"] 本身就是绝对 URL(trae-work / zcode 合并 yaml 这种
-                    # feed 里 files[].url 已经是 cdn 完整路径),直接用,不再拼接 base。
-                    # 只有相对路径时才 base + escape(trae-work 旧 feed 的形态)。
                     encoded =
                       if u.match?(%r{\Ahttps?://})
                         u
@@ -122,15 +94,22 @@ jobs:
               )
             }
 
-            # 第二步:对 fetch_dmgs 输出的每一行(<arch>|<encoded-url>|<sha512>),
-            # 真下 dmg 算 sha256,记录到对应 arch。
-            #
-            # 防守:防止 dmg 下载失败(URL 编码错/网络/OSS 404 等)导致 File.binread 拿到
-            # 空字节,sha256 被误算成空字符串 hash(e3b0c4...)。任何 dmg 必须满足:
-            #   - HTTP 2xx(`curl -f`)
-            #   - 本地文件 size > 0
-            #   - sha256 不是 e3b0c4... 占位
-            # 任一不满足就 fail 整个 cask,避免错写入 main。
+            fetch_dmg_from_arch_feed() {
+              local feed="$1" target_arch="$2"
+              curl -fsSL "$feed" | ruby -ryaml -e '
+                y = YAML.load(STDIN)
+                y["files"].to_a.each do |f|
+                  u = f["url"].to_s
+                  next unless u.end_with?(".dmg")
+                  base = File.basename(u)
+                  next unless ARGV[0] == "arm"   ? base.include?("arm64") :
+                                                  (base.include?("x64") || base.include?("x86_64"))
+                  puts "#{u}|#{f["sha512"]}"
+                  exit
+                end
+              ' "$target_arch"
+            }
+
             local EMPTY_SHA="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
             local prefer_arm_only="false"
             if grep -q 'depends_on arch: :arm64' "$cask_path"; then
@@ -170,7 +149,6 @@ jobs:
               echo "    sha256: $sha ($bytes bytes)"
             done < <(fetch_dmgs "$feed_url" "$prefer_arm_only")
 
-            # 至少要有一个 dmg;arm64-only cask 必须有 arm dmg。
             if [ -z "$arm_url" ] && [ -z "$intel_url" ]; then
               echo "⚠️  $name: yml 里没找到 .dmg"; return 1
             fi
@@ -178,9 +156,32 @@ jobs:
               echo "⚠️  $name: cask 是 arm64-only,但 yml 没出 arm64 dmg"; return 1
             fi
 
-            # ruby 改 cask 文件:
-            #   - 有 on_arm / on_intel:改两个块内的 url + sha256
-            #   - 没这两块(顶层 url + sha256 形式,如 minimax-code):改顶层
+            if [ -z "$intel_url" ] && [ -n "$intel_feed_url" ]; then
+              echo "  + 缺 intel dmg,补拉另一份 manifest"
+              line=$(fetch_dmg_from_arch_feed "$intel_feed_url" "intel" || true)
+              if [ -n "$line" ]; then
+                intel_url="${line%%|*}"
+                tmp=$(mktemp)
+                if ! curl -fsSL "$intel_url" -o "$tmp"; then
+                  rm -f "$tmp"
+                  echo "⚠️  $name: [intel-fallback] dmg 下载失败: $intel_url"
+                  return 1
+                fi
+                bytes=$(wc -c < "$tmp" | tr -d '[:space:]')
+                if [ "${bytes:-0}" -eq 0 ]; then
+                  rm -f "$tmp"
+                  echo "⚠️  $name: [intel-fallback] dmg 是空文件: $intel_url"
+                  return 1
+                fi
+                intel_sha=$(ruby -e "require 'digest'; puts Digest::SHA256.hexdigest(File.binread('$tmp'))")
+                rm -f "$tmp"
+                if [ "$intel_sha" = "$EMPTY_SHA" ]; then
+                  echo "⚠️  $name: [intel-fallback] sha256 是空字符串占位,跳过"; return 1
+                fi
+                echo "    intel-fallback sha256: $intel_sha ($bytes bytes)"
+              fi
+            fi
+
             ruby -i -e '
               path, version, arm_url, arm_sha, intel_url, intel_sha, prefer_arm_only = ARGV
               src = File.read(path)
@@ -201,8 +202,6 @@ jobs:
                   b
                 end
               else
-                # 顶层 url + sha256 的形式(arm64-only cask 写法)。
-                # 如果只撕到一份 dmg,就拿它去写顶层 url + sha256;两份都有时优先 arm。
                 target_url = arm_url.empty? ? intel_url : arm_url
                 target_sha = arm_sha.empty? ? intel_sha : arm_sha
                 src.sub!(/^  url "[^"]+"/,     %Q(  url "#{target_url}"))
@@ -214,7 +213,6 @@ jobs:
               "$intel_url" "$intel_sha" \
               "$prefer_arm_only"
 
-            # brew style 把关,过不了就别提交
             brew style "$cask_path" >/dev/null || { echo "⚠️  $name: brew style 失败,回滚"; git checkout -- "$cask_path"; return 1; }
 
             local current
@@ -228,8 +226,6 @@ jobs:
             echo "✅ $name: 已推到分支 $branch"
           }
 
-          # 通用处理函数:对单个 cask 或 formula 执行 livecheck + bump + PR。
-          # 参数:$1=类型(cask|formula)  $2=名字
           bump_one() {
             local kind="$1" name="$2"
             local flag="--cask"; [ "$kind" = "formula" ] && flag="--formula"
@@ -237,10 +233,8 @@ jobs:
 
             echo "============================================"
             echo "Livecheck ($kind): $name"
-            # livecheck 输出格式:  <name>: <current> ==> <latest>
             result=$(HOMEBREW_NO_COLOR=1 brew livecheck "$flag" "$name" 2>&1 || true)
             echo "$result"
-            # 剥 ANSI 转义码(防 NO_COLOR 不生效)。grep 加 || true 避免 set -e 下无匹配退出。
             clean=$(echo "$result" | sed -E 's/\x1b\[[0-9;]*m//g')
             matched=$(echo "$clean" | grep -iE "^${name}:" || true)
             latest=$(echo "$matched" | sed -E 's/.*==> *//' | tail -1 | tr -d '[:space:]')
@@ -260,18 +254,10 @@ jobs:
 
             local branch="bump-${name}-${latest}"
 
-            # electron-builder generic-provider feed 的 cask 走自定义流程。
-            # bump-cask-pr 用 url 模板拼路径,但这些 cask 的 dmg 名含 build 号,
-            # 模板拼出来的 url 404。判断条件:cask 里写了 strategy :electron_builder。
-            if [ "$kind" = "cask" ] && grep -q 'strategy :electron_builder' "Casks/${name}.rb"; then
+            if [ "$kind" = "cask" ] && grep -qE 'strategy :(electron_builder|page_match)' "Casks/${name}.rb"; then
               apply_electron_builder_bump "$name" "$latest" || return
             else
               echo "🚀 $name: $current → $latest,开始 bump"
-              # bump-*-pr 自己开 PR 要 classic 'repo' scope,GITHUB_TOKEN 没有。
-              # 改用 --write-only --commit 让它只改文件+本地 commit,
-              # 我们自己 git push 分支 + gh pr create 开 PR(认精细权限)。
-              # 注意:--no-style 只在 bump-cask-pr 支持,bump-formula-pr 不支持,
-              # 所以仅 cask 路径传,formula 路径省略(否则会报 invalid option)。
               style_flag="--no-style"; [ "$kind" = "formula" ] && style_flag=""
               brew "$bump_cmd" "$name" \
                 --version="$latest" \
@@ -286,16 +272,12 @@ jobs:
               git checkout main
             fi
 
-            # 已存在 OPEN 状态的同名 PR 则跳过(避免重复开)。
-            # 注意:只查 --state open,否则已 merged 的旧 PR 也会被匹配到,导致永远跳过。
             if gh pr view "$branch" --json number --state open >/dev/null 2>&1; then
               echo "ℹ️  $name: 已有 OPEN 状态的 PR,跳过"
             else
               pr_body=$(printf '自动同步上游版本。\n\n- 类型: `%s`\n- 旧版本: `%s`\n- 新版本: `%s`\n\n由 GitHub Actions 自动生成并合并。' "$kind" "$current" "$latest")
               pr_url=$(gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch")
               echo "✅ PR 已创建: $pr_url"
-              # 自动合并(squash)。--auto:无分支保护时立即合并;有分支保护时等检查通过后合并。
-              # 需要 allow_auto_merge=true(已通过 API 开启)。
               sleep 2
               if gh pr merge "$branch" --squash --auto --delete-branch 2>&1; then
                 echo "✅ PR 已自动合并"
@@ -305,7 +287,6 @@ jobs:
             fi
           }
 
-          # 遍历所有 cask 和 formula。以后新增配方无需改这个 workflow。
           for f in Casks/*.rb; do
             bump_one cask "$(basename "$f" .rb)"
           done
