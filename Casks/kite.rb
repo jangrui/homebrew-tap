@@ -4,8 +4,6 @@ cask "kite" do
   desc "基于 Wails v3 的 K8S 多集群管理桌面工具"
   homepage "https://github.com/eryajf/kite-desktop"
 
-  # macOS 分 apple-silicon 和 intel 两个 dmg,sha256 不同。
-  # 用 on_arm / on_intel 按当前机器架构选对的。
   on_arm do
     sha256 "cc5264ba0c438dc258e5b4410fea38fe4c9b85448476c07581f6602fad9297a1"
     url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-apple-silicon.dmg",
@@ -19,7 +17,6 @@ cask "kite" do
 
   depends_on macos: :catalina
 
-  # livecheck:GitHub Releases 策略 + 从 tag 提取纯版本号(去掉前缀 v)
   livecheck do
     url :url
     strategy :github_releases

@@ -1,18 +1,3 @@
-# 每天喂一次 feeds/trae-work/latest-mac.yml,把 byteDance 的私有
-# POST /icube/api/v1/package/check_update 响应转为 brew livecheck 能消费的
-# electron-builder yaml。auto-bump.yml 的 apply_electron_builder_bump 路径会
-# 直接读这份 yaml 拿真实 dmg URL + sha512 + sha256。
-#
-# 触发:
-#   - schedule:每天 UTC 20:00(北京时间 04:00),跟 auto-bump 错开 1 小时避免撞车
-#   - workflow_dispatch:可手动触发试新参数
-#
-# 为什么走自建代理 feed:
-#   byteDance 把 update 流程重写,Resources/app-update.yml 是空占位符
-#   (`provider: custom, url: ''`),update 走自定义 CustomProvider +
-#   POST https://<region>.trae.ai/icube/api/v1/package/check_update。
-#   响应里给 feedURL + version。brew livecheck 不支持这种自定义 POST API,
-#   所以我们在 GitHub Actions 里替它转发一次,写成标准 yaml。
 name: feed-trae-work
 
 on:
@@ -32,16 +17,8 @@ jobs:
       - name: Query byteDance iCube update API
         id: query
         env:
-          # 当前 cask 里的 version(byteDance 内部 build 号)。
-          # POST 时用作 currentVersion,server 端只在 currentVersion 旧于 latest 时返回新 feed。
           CURRENT_VERSION: "2.3.56914"
         run: |
-          # iCube API 选 USTTP region(跟 .trae.ai 主域分离的 iCube 后端,
-          # 海外 user 命中这个;product.json 里 iCubeApi="normal": "https://icube-normal.trae.ai"
-          # US region="https://icube-normal.traeapi.us"。两种都试,取第一个返回非错的)。
-          #
-          # 请求体格式参考 main.js 里的 getApi 调用 + appVersion 推导。app_id 用
-          # com.trae.solo.app(本机 TRAE SOLO.app 的 bundle ID)。
           for base in "https://icube-normal.traeapi.us" "https://icube-normal.trae.ai"; do
             echo "→ try $base"
             if resp=$(curl -fsS -m 15 -X POST "${base}/icube/api/v1/package/check_update" \
@@ -59,13 +36,11 @@ jobs:
             echo "::error::iCube API 都返回错误,无法喂 feed"; exit 1
           fi
 
-          # 输出响应原始内容(便于 workflow_dispatch 时排查)
           echo "--- resp.json ---"
           cat /tmp/resp.json
           echo
           echo "--- end ---"
 
-          # 提取 byteDance build 号(给 feed yaml 用,跟 dmg URL 路径段对齐)。
           version=$(jq -r '.version // .data.version // empty' /tmp/resp.json)
           [ -z "$version" ] && { echo "::error::响应里没 .version 字段"; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -75,25 +50,10 @@ jobs:
         env:
           VERSION: ${{ steps.query.outputs.version }}
         run: |
-          # dmg URL 模板(跟 byteDance CDN 一致):
-          #   https://lf-static.traecdn.us/obj/trae-ai-tx/pkg/app/releases/stable/{build}/darwin/TRAE_Work-darwin-{arch}.dmg
-          #
-          # 我们无法直接拿到 build 号(API 响应里可能只给一个 marketing version + 一个 feedURL),
-          # 所以从 feedURL 反推 build 号,或者直接拿 feedURL 当 arm64 dmg,
-          # x64 dmg 用同一 build 号的 darwin-x64 同源。
-          #
-          # 实现:从 resp.json 拿 arm64 的 feedURL,提取 build 号(<base>/<build>/darwin/...),
-          # 然后 x64 dmg URL 把 arch 换成 x64。
           arm_url=$(jq -r '.feedURL // .data.feedURL // empty' /tmp/resp.json)
           if [ -z "$arm_url" ]; then
             echo "::error::响应里没 .feedURL 字段"; exit 1
           fi
-          # 优先用 API 给的 feedURL(可能是带签名的临时 URL,过期就废;
-          # 备选:从 /releases/stable/<build>/ 模板拼。byteDance CDN 是公开的,
-          # 所以即使 feedURL 失效也能用模板重拼)。
-          #
-          # 取 build 号:feedURL 形如 .../stable/2.3.56914/...,
-          # sed 抓 stable/ 和下一个 / 之间的数字串。
           build=$(echo "$arm_url" | sed -nE 's|.*/stable/([0-9.]+)/.*|\1|p')
           if [ -z "$build" ]; then
             echo "::error::从 feedURL 抽不出 build 号: $arm_url"; exit 1
@@ -103,7 +63,6 @@ jobs:
           arm="https://lf-static.traecdn.us/obj/trae-ai-tx/pkg/app/releases/stable/${build}/darwin/TRAE_Work-darwin-arm64.dmg"
           x64="https://lf-static.traecdn.us/obj/trae-ai-tx/pkg/app/releases/stable/${build}/darwin/TRAE_Work-darwin-x64.dmg"
 
-          # 验证 URL 真存在(HEAD 200),失败就跳过本次
           for label in arm64 x64; do
             url_var="${label/arm64/arm}"; url_var="${url_var/x64/x64}"  # 保持 arm / x64 变量名
             [ "$label" = "arm64" ] && u="$arm" || u="$x64"
@@ -206,5 +165,4 @@ jobs:
           - x64 sha256: ${X64_SHA256}
           - 由 feed-trae-work.yml 自动生成"
 
-          # 直接 push main —— 这是代理 feed 文件,变更安全;不走 PR(避免自循环)。
           git push origin HEAD:main
