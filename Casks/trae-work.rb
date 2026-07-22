@@ -19,8 +19,10 @@ cask "trae-work" do
   homepage "https://www.trae.ai/"
 
   livecheck do
-    url "https://raw.githubusercontent.com/jangrui/homebrew-tap/main/feeds/trae-work/latest-mac.yml"
-    strategy :electron_builder
+    url "https://icube-normal.traeapi.us/icube/api/v1/package/check_update?mid=0&packageType=stable_i18n&productCode=SOLO_Lite&platform=Mac&branch=release_solo_i18n&appVersion=0.1.0"
+    strategy :json do |json|
+      json.dig("data", "manifest", "darwin", "version")
+    end
   end
 
   depends_on macos: :monterey
