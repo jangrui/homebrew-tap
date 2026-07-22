@@ -252,6 +252,12 @@ jobs:
               return
             fi
 
+            newer=$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -1)
+            if [ "$newer" != "$latest" ]; then
+              echo "✅ $name 配方版本($current)领先上游报告($latest),跳过防止降级"
+              return
+            fi
+
             local branch="bump-${name}-${latest}"
 
             if [ "$kind" = "cask" ] && grep -qE 'strategy :(electron_builder|page_match)' "Casks/${name}.rb"; then
