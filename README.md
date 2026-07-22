@@ -16,6 +16,10 @@ brew install --cask maccalendar
 # 安装 formula
 brew install wps365-cli
 brew install camofox-browser
+# camofox-browser 装完即用:install 阶段编译 better-sqlite3 原生绑定并拉取
+# Camoufox 浏览器二进制(~/Library/Caches/camoufox),post_install 会校验两者,
+# 浏览器下载失败会直接报错(需能访问 github.com/daijro/camoufox/releases)
+brew services start camofox-browser   # REST API 监听 http://localhost:9377
 
 # 升级 / 卸载
 brew upgrade <name>
