@@ -34,6 +34,9 @@ brew uninstall <name>
 |---|---|---|
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
+| [qoder-cn](./Casks/qoder-cn.rb) | 阿里 Qoder CN IDE,为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
+| [qoderwork-cn](./Casks/qoderwork-cn.rb) | QoderWork CN,本地运行、自主规划、安全可控的 AI 工作搭子 | [qoder.com.cn](https://qoder.com.cn/) |
+| [qoderwake-cn](./Casks/qoderwake-cn.rb) | QoderWake CN,全天在线的数字员工 | [qoder.com.cn](https://qoder.com.cn/) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
 | [trae-work](./Casks/trae-work.rb) | byteDance TRAE Work 桌面端,AI agent 三模式(work/code/design),Web/Desktop/Mobile 跨端 | [trae.ai](https://www.trae.ai/) |
 | [wps-note](./Casks/wps-note.rb) | WPS AI 笔记,录音转写 + AI 智能助理(WPS AI)+ 多端云同步 | [ainote.kdocs.cn](https://ainote.kdocs.cn/) |
@@ -51,6 +54,7 @@ brew uninstall <name>
 |---|---|---|
 | [wps365-cli](./Formula/wps365-cli.rb) | WPS 365 命令行客户端(Rust 预编译二进制) | [wps365-open/cli](https://github.com/wps365-open/cli) |
 | [camofox-browser](./Formula/camofox-browser.rb) | 面向 AI agent 的反检测浏览器服务器,Camoufox 引擎 + REST API + CLI | [redf0x1/camofox-browser](https://github.com/redf0x1/camofox-browser) |
+| [qoder-cli-cn](./Formula/qoder-cli-cn.rb) | Qoder CN CLI,终端原生的 AI 编程搭档(预编译二进制) | [qoder.com.cn](https://qoder.com.cn/) |
 
 ## 目录结构
 
@@ -59,13 +63,17 @@ homebrew-tap/
 ├── Casks/             # GUI App (brew install --cask xxx)
 │   ├── maccalendar.rb
 │   ├── minimax-code.rb
+│   ├── qoder-cn.rb
+│   ├── qoderwork-cn.rb
+│   ├── qoderwake-cn.rb
 │   ├── qwen.rb
 │   ├── trae-work.rb
 │   ├── wps-note.rb
 │   └── zcode.rb
 ├── Formula/           # 命令行工具 (brew install xxx)
 │   ├── wps365-cli.rb
-│   └── camofox-browser.rb
+│   ├── camofox-browser.rb
+│   └── qoder-cli-cn.rb
 └── .github/workflows/
     └── auto-bump.yml  # 每天自动 livecheck + bump + PR
 ```
@@ -136,4 +144,7 @@ curl -sL "<tarball url>" | shasum -a 256
 | 上游 update API 私有但支持 GET 查询(如 trae-work) | `strategy :json` + 逆向出的 GET 端点,block 里 dig 出版本字段(如 `json.dig("data","manifest","darwin","version")`)。客户端必填参数可从 App 包 `out/main.js` 里挖;自报版本参数(如 `appVersion`)填旧值,强制服务端始终返回最新 manifest。cask 的 `version` 用 byteDance 内部 build 号(而非公开 marketing version),这样 `#{version}` 模板能拼出真实 dmg CDN 路径 |
 | CDN 无 API、无公开 feed、版本号只在文档站发布(如 zcode、minimax-code) | `strategy :page_match` + 指向 changelog 页的 `url`(Mintlify 站点可优先用 `/docs/changelog.md` markdown 镜像),配合 `regex` 提取 `vX.Y.Z` |
 | 官网提供公开 JSON 版本历史 API(如 wps-note 的 ainote.kdocs.cn `/home/api/versions/history`) | `strategy :json` + 指向 `?client_type=mac_arm&page=1&page_size=1` 的 `url`,block 里 `json.dig("data", "list")&.first&.dig("version")`。下载地址和版本号同 API 返回,`on_arm`/`on_intel` 各自包不同后缀(arm64 / x64) |
+| 上游提供 channels/manifest.json 发布清单(如 qoderwake-cn、qoder-cli-cn) | `strategy :json` + 指向 manifest 的 `url`,block 里 `json["latest"]`。manifest 里每个平台的 url/sha256 都有,bump 时直接取用(已抽验与实测下载一致) |
+| changelog 页混排多条产品线、版本号互相穿插(如 qoder-cn 的更新日志同时列 IDE 1.x 和 JetBrains 插件 3.x) | `strategy :page_match` + `\A` 锚定 + 懒惰匹配只取页面第一个版本号(IDE 排最前):`regex(/\A.*?v?(\d+(?:\.\d+)+)\s*\(\d{4}-\d{2}-\d{2}\)/im)`。**坑**:livecheck 对多个匹配取最大值,不锚定会拿到 JetBrains 的 3.x |
+| 上游只提供 `releases/latest` 固定链接、版本化路径 403(如 qoderwork-cn) | 无法 livecheck:`version :latest` + `sha256 :no_check` + `livecheck { skip }`,URL 永远指向最新,bump workflow 状态为 `skipped` 属正常 |
 | 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |
