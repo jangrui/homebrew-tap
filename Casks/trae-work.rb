@@ -19,9 +19,9 @@ cask "trae-work" do
   homepage "https://www.trae.ai/"
 
   livecheck do
-    url "https://icube-normal.traeapi.us/icube/api/v1/package/check_update?mid=0&packageType=stable_i18n&productCode=SOLO_Lite&platform=Mac&branch=release_solo_i18n&appVersion=0.1.0"
+    url "https://icube-normal.traeapi.us/icube/api/v1/native/version/trae/latest"
     strategy :json do |json|
-      json.dig("data", "manifest", "darwin", "version")
+      json.dig("data", "solo", "darwin", "version")
     end
   end
 
