@@ -36,6 +36,7 @@ brew uninstall <name>
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
 | [trae-work](./Casks/trae-work.rb) | byteDance TRAE Work 桌面端,AI agent 三模式(work/code/design),Web/Desktop/Mobile 跨端 | [trae.ai](https://www.trae.ai/) |
+| [wps-note](./Casks/wps-note.rb) | WPS AI 笔记,录音转写 + AI 智能助理(WPS AI)+ 多端云同步 | [ainote.kdocs.cn](https://ainote.kdocs.cn/) |
 | [zcode](./Casks/zcode.rb) | Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent | [zcode.z.ai](https://zcode.z.ai) |
 
 > **为什么自建?** 原作者 `bylinxx/homebrew-tap` 的 cask 长期不更新:
@@ -60,6 +61,7 @@ homebrew-tap/
 │   ├── minimax-code.rb
 │   ├── qwen.rb
 │   ├── trae-work.rb
+│   ├── wps-note.rb
 │   └── zcode.rb
 ├── Formula/           # 命令行工具 (brew install xxx)
 │   ├── wps365-cli.rb
@@ -133,4 +135,5 @@ curl -sL "<tarball url>" | shasum -a 256
 | 上游提供公开 GET manifest API 但形态不利于 livecheck(如 zcode 历史做法) | 自建代理 feed 转成标准 yaml 后 `:electron_builder` 指 raw GitHub。**注意**:如果上游有 stable/preview 频道,选择 preview (`channel=3`) 以提前跟进版本,等 stable 流追上后行为自然收敛 |
 | 上游 update API 私有但支持 GET 查询(如 trae-work) | `strategy :json` + 逆向出的 GET 端点,block 里 dig 出版本字段(如 `json.dig("data","manifest","darwin","version")`)。客户端必填参数可从 App 包 `out/main.js` 里挖;自报版本参数(如 `appVersion`)填旧值,强制服务端始终返回最新 manifest。cask 的 `version` 用 byteDance 内部 build 号(而非公开 marketing version),这样 `#{version}` 模板能拼出真实 dmg CDN 路径 |
 | CDN 无 API、无公开 feed、版本号只在文档站发布(如 zcode、minimax-code) | `strategy :page_match` + 指向 changelog 页的 `url`(Mintlify 站点可优先用 `/docs/changelog.md` markdown 镜像),配合 `regex` 提取 `vX.Y.Z` |
+| 官网提供公开 JSON 版本历史 API(如 wps-note 的 ainote.kdocs.cn `/home/api/versions/history`) | `strategy :json` + 指向 `?client_type=mac_arm&page=1&page_size=1` 的 `url`,block 里 `json.dig("data", "list")&.first&.dig("version")`。下载地址和版本号同 API 返回,`on_arm`/`on_intel` 各自包不同后缀(arm64 / x64) |
 | 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |
