@@ -278,7 +278,11 @@ jobs:
 
             local branch="bump-${name}-${latest}"
 
-            if [ "$kind" = "cask" ] && grep -qE 'strategy :(electron_builder|page_match)' "Casks/${name}.rb"; then
+            # url 里带 #{version} 模板 → bump-cask-pr 能自己拼 URL+算 sha,走标准路径;
+            # url 写死版本号(dmg 文件名带 build 号等)→ 走自定义 electron_builder 下载流程。
+            # 不能按 livecheck strategy 名判断:qoder-cn 是 :page_match 但 url 带 #{version},
+            # 会被误判进 electron_builder 路径,把 HTML 更新日志当 YAML 解析。
+            if [ "$kind" = "cask" ] && ! grep -qE 'url "[^"]*#\{version\}' "Casks/${name}.rb"; then
               apply_electron_builder_bump "$name" "$latest" || return
             else
               echo "🚀 $name: $current → $latest,开始 bump"
