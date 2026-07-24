@@ -69,9 +69,18 @@ jobs:
                 echo "${arch_kind}|${dmg_url}|${server_sha}"
               done < <(
                 curl -fsSL "$feed" | ruby -ryaml -ruri -e '
-                  y = YAML.load(STDIN)
                   prefer_arm_only = ARGV[0] == "true"
                   base = ARGV[1]
+                  begin
+                    y = YAML.load(STDIN)
+                  rescue Psych::SyntaxError => e
+                    warn "feed 不是合法 YAML(#{e.line}:#{e.column} #{e.problem}): $feed"
+                    exit 1
+                  end
+                  unless y.is_a?(Hash) && y["files"].is_a?(Array)
+                    warn "feed 不是 electron-builder 的 latest-mac.yml(缺 files[]): $feed"
+                    exit 1
+                  end
                   y["files"].to_a.each do |f|
                     u = f["url"].to_s
                     next unless u.end_with?(".dmg")
@@ -97,7 +106,16 @@ jobs:
             fetch_dmg_from_arch_feed() {
               local feed="$1" target_arch="$2"
               curl -fsSL "$feed" | ruby -ryaml -e '
-                y = YAML.load(STDIN)
+                begin
+                  y = YAML.load(STDIN)
+                rescue Psych::SyntaxError => e
+                  warn "feed 不是合法 YAML(#{e.line}:#{e.column} #{e.problem}): $feed"
+                  exit 1
+                end
+                unless y.is_a?(Hash) && y["files"].is_a?(Array)
+                  warn "feed 不是 electron-builder 的 latest-mac.yml(缺 files[]): $feed"
+                  exit 1
+                end
                 y["files"].to_a.each do |f|
                   u = f["url"].to_s
                   next unless u.end_with?(".dmg")
@@ -293,12 +311,17 @@ jobs:
             fi
           }
 
+          errors=0
           for f in Casks/*.rb; do
-            bump_one cask "$(basename "$f" .rb)"
+            bump_one cask "$(basename "$f" .rb)" || errors=$((errors+1))
           done
           for f in Formula/*.rb; do
-            bump_one formula "$(basename "$f" .rb)"
+            bump_one formula "$(basename "$f" .rb)" || errors=$((errors+1))
           done
 
           echo "============================================"
+          if [ "$errors" -gt 0 ]; then
+            echo "❌ 完成,但有 $errors 个包 bump 失败(见上方 ⚠️ 日志)"
+            exit 1
+          fi
           echo "完成。如有更新,PR 会自动合并到 main(无需人工干预)。"
