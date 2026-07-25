@@ -36,6 +36,7 @@ brew uninstall <name>
 | [marvis](./Casks/marvis.rb) | 腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控),仅 arm64 | [marvis.qq.com](https://marvis.qq.com/) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
 | [openchatcut](./Casks/openchatcut.rb) | 本地优先的对话式 AI 视频编辑器,多轨时间线 + 自然语言剪辑 | [0xsline/OpenChatCut](https://github.com/0xsline/OpenChatCut) |
+| [opensquilla](./Casks/opensquilla.rb) | OpenSquilla 桌面端,Token 高效的本地 AI Agent(SquillaRouter 模型路由 + 多工具 + 本地记忆),仅 arm64 | [opensquilla/opensquilla](https://github.com/opensquilla/opensquilla) |
 | [qoder-cn](./Casks/qoder-cn.rb) | 阿里 Qoder CN IDE,为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
 | [qoderwork-cn](./Casks/qoderwork-cn.rb) | QoderWork CN,本地运行、自主规划、安全可控的 AI 工作搭子 | [qoder.com.cn](https://qoder.com.cn/) |
 | [qoderwake-cn](./Casks/qoderwake-cn.rb) | QoderWake CN,全天在线的数字员工 | [qoder.com.cn](https://qoder.com.cn/) |
@@ -67,6 +68,7 @@ homebrew-tap/
 │   ├── marvis.rb
 │   ├── minimax-code.rb
 │   ├── openchatcut.rb
+│   ├── opensquilla.rb
 │   ├── qoder-cn.rb
 │   ├── qoderwork-cn.rb
 │   ├── qoderwake-cn.rb
