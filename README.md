@@ -33,6 +33,7 @@ brew uninstall <name>
 | 名称 | 说明 | 上游 |
 |---|---|---|
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
+| [marvis](./Casks/marvis.rb) | 腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控),仅 arm64 | [marvis.qq.com](https://marvis.qq.com/) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
 | [qoder-cn](./Casks/qoder-cn.rb) | 阿里 Qoder CN IDE,为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
 | [qoderwork-cn](./Casks/qoderwork-cn.rb) | QoderWork CN,本地运行、自主规划、安全可控的 AI 工作搭子 | [qoder.com.cn](https://qoder.com.cn/) |
@@ -62,6 +63,7 @@ brew uninstall <name>
 homebrew-tap/
 ├── Casks/             # GUI App (brew install --cask xxx)
 │   ├── maccalendar.rb
+│   ├── marvis.rb
 │   ├── minimax-code.rb
 │   ├── qoder-cn.rb
 │   ├── qoderwork-cn.rb
@@ -147,4 +149,5 @@ curl -sL "<tarball url>" | shasum -a 256
 | 上游提供 channels/manifest.json 发布清单(如 qoderwake-cn、qoder-cli-cn) | `strategy :json` + 指向 manifest 的 `url`,block 里 `json["latest"]`。manifest 里每个平台的 url/sha256 都有,bump 时直接取用(已抽验与实测下载一致) |
 | changelog 页混排多条产品线、版本号互相穿插(如 qoder-cn 的更新日志同时列 IDE 1.x 和 JetBrains 插件 3.x) | `strategy :page_match` + `\A` 锚定 + 懒惰匹配只取页面第一个版本号(IDE 排最前):`regex(/\A.*?v?(\d+(?:\.\d+)+)\s*\(\d{4}-\d{2}-\d{2}\)/im)`。**坑**:livecheck 对多个匹配取最大值,不锚定会拿到 JetBrains 的 3.x |
 | 上游只提供 `releases/latest` 固定链接、版本化路径 403(如 qoderwork-cn) | 无法 livecheck:`version :latest` + `sha256 :no_check` + `livecheck { skip }`,URL 永远指向最新,bump workflow 状态为 `skipped` 属正常 |
+| 官网下载页 302 到 CDN、文件名含版本号但无公开版本查询(如 marvis) | 同上 `:latest` + `:no_check` + `skip`。URL 用**官网下载页**(如 `marvis.qq.com/download/dmg`)而非 CDN 直链:CDN 路径含 installer 编号(如 `installer/520/`)、上游换号就破,而官网 302 永远指当前最新。**坑**:上游可能只发单架构(marvis 只 arm64,对 Intel UA 也 redirect 到 arm64 包),`depends_on arch: :arm64` 锁死 |
 | 其它 | 见 [Homebrew livecheck 文档](https://docs.brew.sh/Brew-Livecheck) |
