@@ -18,8 +18,6 @@ cask "qoder-cn" do
   desc "为真实软件开发打造的智能体自主开发工作台"
   homepage "https://qoder.com.cn/"
 
-  # 更新日志页混排 IDE/JetBrains/VS 多条产品线,JetBrains 版本号(3.x)比 IDE(1.x)高,
-  # livecheck 取所有匹配中的最大值,所以用 \A 锚定 + 懒惰匹配只取页面第一个版本号(IDE 最新版)
   livecheck do
     url "https://docs.qoder.cn/product-overview/qoder-cn-update-log"
     strategy :page_match

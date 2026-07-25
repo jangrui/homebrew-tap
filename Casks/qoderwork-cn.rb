@@ -15,7 +15,6 @@ cask "qoderwork-cn" do
   desc "本地运行、自主规划、安全可控的 AI 工作搭子"
   homepage "https://qoder.com.cn/"
 
-  # 上游只提供 releases/latest 固定链接(版本化路径 403),无法 livecheck
   livecheck do
     skip "Upstream only publishes a latest/ URL"
   end
