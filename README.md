@@ -58,6 +58,7 @@ brew uninstall <name>
 | [wps365-cli](./Formula/wps365-cli.rb) | WPS 365 命令行客户端(Rust 预编译二进制) | [wps365-open/cli](https://github.com/wps365-open/cli) |
 | [camofox-browser](./Formula/camofox-browser.rb) | 面向 AI agent 的反检测浏览器服务器,Camoufox 引擎 + REST API + CLI | [redf0x1/camofox-browser](https://github.com/redf0x1/camofox-browser) |
 | [qoder-cli-cn](./Formula/qoder-cli-cn.rb) | Qoder CN CLI,终端原生的 AI 编程搭档(预编译二进制) | [qoder.com.cn](https://qoder.com.cn/) |
+| [lark-cli](./Formula/lark-cli.rb) | 飞书/Lark 官方命令行工具(预编译二进制) | [larksuite/cli](https://github.com/larksuite/cli) |
 
 ## 目录结构
 
