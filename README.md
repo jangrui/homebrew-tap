@@ -55,7 +55,7 @@ brew uninstall <name>
 
 | 名称 | 说明 | 上游 |
 |---|---|---|
-| [dbx-mcp-server](./Formula/dbx-mcp-server.rb) | DBX 数据库 MCP server,AI agent 直查 MySQL/PostgreSQL 等(npm 包装 + Rust 预编译平台二进制) | [t8y2/dbx](https://github.com/t8y2/dbx) |
+| [dbx-mcp](./Formula/dbx-mcp.rb) | DBX 数据库 MCP server,AI agent 直查 MySQL/PostgreSQL 等(npm 包装 + Rust 预编译平台二进制) | [t8y2/dbx](https://github.com/t8y2/dbx) |
 | [wps365-cli](./Formula/wps365-cli.rb) | WPS 365 命令行客户端(Rust 预编译二进制) | [wps365-open/cli](https://github.com/wps365-open/cli) |
 | [camofox-browser](./Formula/camofox-browser.rb) | 面向 AI agent 的反检测浏览器服务器,Camoufox 引擎 + REST API + CLI | [redf0x1/camofox-browser](https://github.com/redf0x1/camofox-browser) |
 | [qoder-cli-cn](./Formula/qoder-cli-cn.rb) | Qoder CN CLI,终端原生的 AI 编程搭档(预编译二进制) | [qoder.com.cn](https://qoder.com.cn/) |
@@ -79,7 +79,7 @@ homebrew-tap/
 │   ├── wps-note.rb
 │   └── zcode.rb
 ├── Formula/           # 命令行工具 (brew install xxx)
-│   ├── dbx-mcp-server.rb
+│   ├── dbx-mcp.rb
 │   ├── wps365-cli.rb
 │   ├── camofox-browser.rb
 │   ├── lark-cli.rb
