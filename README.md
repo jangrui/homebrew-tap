@@ -31,6 +31,7 @@ brew uninstall <name>
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
 | [marvis](./Casks/marvis.rb) | 腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控),仅 arm64 | [marvis.qq.com](https://marvis.qq.com/) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
+| [mouser](./Casks/mouser.rb) | Logitech Options+ 开源替代品,HID++ 鼠标按键重映射 + 按应用配置 | [TomBadash/Mouser](https://github.com/TomBadash/Mouser) |
 | [openchatcut](./Casks/openchatcut.rb) | 本地优先的对话式 AI 视频编辑器,多轨时间线 + 自然语言剪辑 | [0xsline/OpenChatCut](https://github.com/0xsline/OpenChatCut) |
 | [opensquilla](./Casks/opensquilla.rb) | OpenSquilla 桌面端,Token 高效的本地 AI Agent(SquillaRouter 模型路由 + 多工具 + 本地记忆),仅 arm64 | [opensquilla/opensquilla](https://github.com/opensquilla/opensquilla) |
 | [qoder-cn](./Casks/qoder-cn.rb) | 阿里 Qoder CN IDE,为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
