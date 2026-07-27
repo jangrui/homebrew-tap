@@ -1,6 +1,6 @@
 cask "maccalendar" do
-  version "1.7.7"
-  sha256 "c5effb191c4d60d98fd513fa81105bbdf0a06f8d2009593223399cfcb50934bc"
+  version "1.7.9"
+  sha256 "9c7bfea7465c428c59fdb93a5f66f6793feb0b821b57c2ccf89c46c352c136ab"
 
   url "https://github.com/bylinxx/MacCalendar/releases/download/v#{version}/MacCalendar.dmg",
       verified: "github.com/bylinxx/MacCalendar/"
