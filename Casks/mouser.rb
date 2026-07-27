@@ -1,13 +1,13 @@
 cask "mouser" do
-  version "3.7.1"
+  version "3.7.2"
 
   on_arm do
-    sha256 "d559db2dcff0bcbd29920a9dd51045cd33ba2c9272560cea5919d80bb136b75c"
+    sha256 "1bccc07e469b67fbada54ce3b0630785be70df2c2cd0842c5510a0295eac2213"
 
     url "https://github.com/TomBadash/Mouser/releases/download/v#{version}/Mouser-macOS.zip"
   end
   on_intel do
-    sha256 "fd7d204af0f9c5a154efe15c9f24a9ca2d29e29099f9101c75c120e8d08f7094"
+    sha256 "c7936598a687223f6637f4896d5e2ee2de316e14a15cebfa2eae28071badc2f7"
 
     url "https://github.com/TomBadash/Mouser/releases/download/v#{version}/Mouser-macOS-intel.zip"
   end
