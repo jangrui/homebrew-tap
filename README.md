@@ -57,3 +57,4 @@ brew uninstall <name>
 | [camofox-browser](./Formula/camofox-browser.rb) | 面向 AI agent 的反检测浏览器服务器,Camoufox 引擎 + REST API + CLI | [redf0x1/camofox-browser](https://github.com/redf0x1/camofox-browser) |
 | [qoder-cli-cn](./Formula/qoder-cli-cn.rb) | Qoder CN CLI,终端原生的 AI 编程搭档(预编译二进制) | [qoder.com.cn](https://qoder.com.cn/) |
 | [lark-cli](./Formula/lark-cli.rb) | 飞书/Lark 官方命令行工具(预编译二进制) | [larksuite/cli](https://github.com/larksuite/cli) |
+| [opencodex](./Formula/opencodex.rb) | OpenAI Codex 与 Claude Code 的通用 provider 代理,接入任意 LLM | [lidge-jun/opencodex](https://github.com/lidge-jun/opencodex) |
