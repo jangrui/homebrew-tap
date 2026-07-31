@@ -1,17 +1,17 @@
 cask "zcode" do
   arch arm: "arm64", intel: "x64"
 
-  version "3.6.4"
+  version "3.6.5"
 
   on_arm do
-    sha256 "0ca14145c55b89f8320597dd1fea4edb2f0d090a40051d2edc636ee577a0fa2d"
+    sha256 "e4f93eb3fa51825fc3a443b3307dc52eda98c018d9ac326a22d254f8aa77ac8b"
 
-    url "https://cdn-zcode.z.ai/zcode/electron/releases/3.6.4/macos-arm64/ZCode-3.6.4-mac-arm64.dmg"
+    url "https://cdn-zcode.z.ai/zcode/electron/releases/3.6.5/macos-arm64/ZCode-3.6.5-mac-arm64.dmg"
   end
   on_intel do
-    sha256 "146eb1cae603381b82bc06b5045f8688d22ab84b2f5ae41c83c621d97d01de07"
+    sha256 "8f496426828411940a03e757f9a9f56ee684f9b59274351f7f7b96e4c55c4df8"
 
-    url "https://cdn-zcode.z.ai/zcode/electron/releases/3.6.4/macos-x64/ZCode-3.6.4-mac-x64.dmg"
+    url "https://cdn-zcode.z.ai/zcode/electron/releases/3.6.5/macos-x64/ZCode-3.6.5-mac-x64.dmg"
   end
 
   name "ZCode"
