@@ -1,14 +1,14 @@
 cask "wps-note" do
-  version "1.5.2"
+  version "1.6.0"
 
   on_arm do
-    sha256 "d0a58ae2b24b6a890569bfb885ecc21e444a15c32d62079d17f8c1a289984b11"
+    sha256 "cbd48b557644eec509ca27bf2dfd4c85f172a8844823a93970fcdbbc6cbb219b"
 
     url "https://ainote.wpscdn.cn/downloads/mac/v#{version}/WPS%E7%AC%94%E8%AE%B0-#{version}-arm64.dmg",
         verified: "ainote.wpscdn.cn/downloads/mac/"
   end
   on_intel do
-    sha256 "1ce7d9d09811ebb42102bb173917367c423597284e83ab8624deed0a612bb8ae"
+    sha256 "981382d9c32ebf52aa9fa6a14a167f51314234d2b4867573c26b287cc2cd08cc"
 
     url "https://ainote.wpscdn.cn/downloads/mac/v#{version}/WPS%E7%AC%94%E8%AE%B0-#{version}-x64.dmg",
         verified: "ainote.wpscdn.cn/downloads/mac/"
