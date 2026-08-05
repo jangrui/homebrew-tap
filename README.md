@@ -42,6 +42,7 @@ brew uninstall <name>
 | [reasonix-app](./Casks/reasonix-app.rb) | Reasonix Desktop,DeepSeek 原生 AI coding agent 桌面端(prefix-cache 稳定性设计) | [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) |
 | [trae-work](./Casks/trae-work.rb) | byteDance TRAE Work 桌面端,AI agent 三模式(work/code/design),Web/Desktop/Mobile 跨端 | [trae.ai](https://www.trae.ai/) |
 | [wps-note](./Casks/wps-note.rb) | WPS AI 笔记,录音转写 + AI 智能助理(WPS AI)+ 多端云同步 | [ainote.kdocs.cn](https://ainote.kdocs.cn/) |
+| [workbuddy](./Casks/workbuddy.rb) | 腾讯 WorkBuddy AI 办公工作台(自然语言下任务、多 Agent 执行、交付文档/PPT,打通腾讯文档/会议/邮箱生态) | [www.workbuddy.cn](https://www.workbuddy.cn/) |
 | [zcode](./Casks/zcode.rb) | Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent | [zcode.z.ai](https://zcode.z.ai) |
 
 > **为什么自建?** 原作者 `bylinxx/homebrew-tap` 的 cask 长期不更新:
