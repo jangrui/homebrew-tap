@@ -1,7 +1,7 @@
 class LarkCli < Formula
   desc "飞书/Lark 官方命令行工具"
   homepage "https://github.com/larksuite/cli"
-  version "1.0.83"
+  version "1.0.84"
 
   livecheck do
     url "https://github.com/larksuite/cli/releases/latest"
@@ -11,22 +11,22 @@ class LarkCli < Formula
   on_macos do
     on_arm do
       url "https://github.com/larksuite/cli/releases/download/v#{version}/lark-cli-#{version}-darwin-arm64.tar.gz"
-      sha256 "81dfa4557152d15c020c1a08de42a093eb7b38622811535e336c34165f1e863a"
+      sha256 "bc56a15fce5b6fdb065702ac03ef4d051bc71ea511b75f316461008e4a359ba5"
     end
     on_intel do
       url "https://github.com/larksuite/cli/releases/download/v#{version}/lark-cli-#{version}-darwin-amd64.tar.gz"
-      sha256 "06c1bb27c9a714e186c4c3db4762c3d7f0bc9dfa57cba534d1c7080e28353845"
+      sha256 "d9958d1d877e235eba7395e10c443e70849a838806137760170d404786f5a2b4"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/larksuite/cli/releases/download/v#{version}/lark-cli-#{version}-linux-arm64.tar.gz"
-      sha256 "62119a3d554d2c38b14cd644f008a84ee81f88806abb264e77121393f52bee39"
+      sha256 "dd7b37da74133f280944b0d7c6d51037b2d3dc36a5042d0963858e44da4bcf8d"
     end
     on_intel do
       url "https://github.com/larksuite/cli/releases/download/v#{version}/lark-cli-#{version}-linux-amd64.tar.gz"
-      sha256 "0f098783b292f0894d8f9fd953c478a1ddd4db29cdebb661262727ed94842ddc"
+      sha256 "e2179cf3453406eac6aad4a9d9244424465bfcd16ede2ce56d10bedfdf26d96d"
     end
   end
 
