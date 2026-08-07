@@ -1,8 +1,8 @@
 cask "minimax-code" do
-  version "3.0.59"
-  sha256 "015430cac451708ecd6fa08ca1566e98d955de62eaad71ed376a4ee3ca06a6ad"
+  version "3.0.60"
+  sha256 "7e83ff19b9bc1689af5b08aa02205c901002e52ac86b5689182b168b8f029c0f"
 
-  url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/MiniMax%20Code-3.0.59-arm64.dmg",
+  url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/MiniMax%20Code-3.0.60-arm64.dmg",
       verified: "filecdn.minimax.chat/public/minimax-agent-prod/"
   name "MiniMax Code"
   desc "MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化"
