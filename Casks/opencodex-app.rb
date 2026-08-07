@@ -1,6 +1,6 @@
 cask "opencodex-app" do
-  version "1.1.2"
-  sha256 "5affb132b4ef3504a776283a7dc5457a4e0fce7ea9e91694afc09327b3836c19"
+  version "1.2.0"
+  sha256 "ab349e3432d4c5c24aabe89743a4e4c4615455e43a297976db278f077e90bd05"
 
   url "https://github.com/AITabby/opencodex/releases/download/v#{version}/OpenCodex-#{version}-arm64.dmg"
   name "OpenCodex"
