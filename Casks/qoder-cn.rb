@@ -19,9 +19,9 @@ cask "qoder-cn" do
   homepage "https://qoder.com.cn/"
 
   livecheck do
-    url "https://docs.qoder.cn/product-overview/qoder-cn-update-log"
+    url "https://docs.qoder.cn/product-overview/qoder-cn-update-log.md"
     strategy :page_match
-    regex(/\A.*?v?(\d+(?:\.\d+)+)\s*\(\d{4}-\d{2}-\d{2}\)/im)
+    regex(/\A.*?v?(\d+(?:\.\d+)+)/im)
   end
 
   depends_on macos: :monterey
