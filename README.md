@@ -41,6 +41,7 @@ brew uninstall <name>
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
 | [reasonix-app](./Casks/reasonix-app.rb) | Reasonix Desktop,DeepSeek 原生 AI coding agent 桌面端(prefix-cache 稳定性设计) | [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) |
 | [trae-work](./Casks/trae-work.rb) | byteDance TRAE Work 桌面端,AI agent 三模式(work/code/design),Web/Desktop/Mobile 跨端 | [trae.ai](https://www.trae.ai/) |
+| [unsloth](./Casks/unsloth.rb) | Unsloth Desktop,本地运行与训练 LLM/扩散模型,仅 Apple Silicon | [unslothai/unsloth](https://github.com/unslothai/unsloth) |
 | [wps-note](./Casks/wps-note.rb) | WPS AI 笔记,录音转写 + AI 智能助理(WPS AI)+ 多端云同步 | [ainote.kdocs.cn](https://ainote.kdocs.cn/) |
 | [workbuddy](./Casks/workbuddy.rb) | 腾讯 WorkBuddy AI 办公工作台(自然语言下任务、多 Agent 执行、交付文档/PPT,打通腾讯文档/会议/邮箱生态) | [www.workbuddy.cn](https://www.workbuddy.cn/) |
 | [zcode](./Casks/zcode.rb) | Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent | [zcode.z.ai](https://zcode.z.ai) |
