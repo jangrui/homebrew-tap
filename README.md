@@ -33,6 +33,7 @@ brew uninstall <name>
 | [marvis](./Casks/marvis.rb) | 腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控),仅 arm64 | [marvis.qq.com](https://marvis.qq.com/) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
 | [mouser](./Casks/mouser.rb) | Logitech Options+ 开源替代品,HID++ 鼠标按键重映射 + 按应用配置 | [TomBadash/Mouser](https://github.com/TomBadash/Mouser) |
+| [omniroute-app](./Casks/omniroute-app.rb) | OmniRoute 桌面端(Electron),统一 AI 网关,聚合 160+ 提供商的浏览器仪表盘 | [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) |
 | [openchatcut](./Casks/openchatcut.rb) | 本地优先的对话式 AI 视频编辑器,多轨时间线 + 自然语言剪辑 | [0xsline/OpenChatCut](https://github.com/0xsline/OpenChatCut) |
 | [codexsplit](./Casks/codexsplit.rb) | CodexSplit(Codex Desktop)本地 AI 工作台,网关、语音、会话管理、第三方模型与 Agent 工具,仅 arm64 | [AITabby/opencodex](https://github.com/AITabby/opencodex) |
 | [opensquilla](./Casks/opensquilla.rb) | OpenSquilla 桌面端,Token 高效的本地 AI Agent(SquillaRouter 模型路由 + 多工具 + 本地记忆),仅 arm64 | [opensquilla/opensquilla](https://github.com/opensquilla/opensquilla) |
@@ -62,4 +63,5 @@ brew uninstall <name>
 | [camofox-browser](./Formula/camofox-browser.rb) | 面向 AI agent 的反检测浏览器服务器,Camoufox 引擎 + REST API + CLI | [redf0x1/camofox-browser](https://github.com/redf0x1/camofox-browser) |
 | [qoder-cli-cn](./Formula/qoder-cli-cn.rb) | Qoder CN CLI,终端原生的 AI 编程搭档(预编译二进制) | [qoder.com.cn](https://qoder.com.cn/) |
 | [lark-cli](./Formula/lark-cli.rb) | 飞书/Lark 官方命令行工具(预编译二进制) | [larksuite/cli](https://github.com/larksuite/cli) |
+| [omniroute](./Formula/omniroute.rb) | OmniRoute CLI,统一 AI 网关,聚合 160+ 提供商到单一 OpenAI 兼容端点(Next.js standalone + 原生模块) | [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) |
 | [opencodex](./Formula/opencodex.rb) | OpenAI Codex 与 Claude Code 的通用 provider 代理,接入任意 LLM | [lidge-jun/opencodex](https://github.com/lidge-jun/opencodex) |
