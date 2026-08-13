@@ -28,6 +28,7 @@ brew uninstall <name>
 
 | 名称 | 说明 | 上游 |
 |---|---|---|
+| [easycliproxyapi](./Casks/easycliproxyapi.rb) | EasyCLIProxyAPI 桌面端,CLIProxyAPI 的 GUI + 主流 AI Agent(Claude/Codex 等)自动配置工具 | [router-for-me/EasyCLIProxyAPI](https://github.com/router-for-me/EasyCLIProxyAPI) |
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
 | [marvis](./Casks/marvis.rb) | 腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控),仅 arm64 | [marvis.qq.com](https://marvis.qq.com/) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
