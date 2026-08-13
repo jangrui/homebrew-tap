@@ -36,6 +36,7 @@ class CamofoxBrowser < Formula
     return unless OS.mac?
 
     arch = Hardware::CPU.arch
+    arch = :x64 if arch == :x86_64
     Dir.glob(libexec/"lib/node_modules/**/prebuilds/darwin-*").each do |dir|
       next if File.basename(dir).end_with?(arch.to_s)
 
