@@ -27,6 +27,11 @@ cask "openchatcut" do
 
   app "OpenChatCut.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-rd", "com.apple.quarantine", "#{appdir}/OpenChatCut.app"]
+  end
+
   zap trash: [
     "~/Library/Application Support/OpenChatCut",
     "~/Library/Caches/dev.openchatcut.app.ShipIt",

@@ -17,5 +17,10 @@ cask "maccalendar" do
 
   app "MacCalendar.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-rd", "com.apple.quarantine", "#{appdir}/MacCalendar.app"]
+  end
+
   zap trash: []
 end

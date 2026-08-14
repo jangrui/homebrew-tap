@@ -17,6 +17,11 @@ cask "codexsplit" do
 
   app "CodexSplit.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-rd", "com.apple.quarantine", "#{appdir}/CodexSplit.app"]
+  end
+
   zap trash: [
     "~/Library/Application Support/CodexSplit",
     "~/Library/Caches/com.aitabby.codexsplit",

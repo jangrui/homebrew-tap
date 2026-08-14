@@ -24,6 +24,11 @@ cask "kite" do
 
   app "Kite.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-rd", "com.apple.quarantine", "#{appdir}/Kite.app"]
+  end
+
   zap trash: [
     "~/Library/Application Support/com.eryajf.kite",
     "~/Library/Caches/com.eryajf.kite",

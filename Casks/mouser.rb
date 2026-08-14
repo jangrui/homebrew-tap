@@ -25,5 +25,10 @@ cask "mouser" do
 
   app "Mouser.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-rd", "com.apple.quarantine", "#{appdir}/Mouser.app"]
+  end
+
   zap trash: "~/Library/Application Support/Mouser"
 end
