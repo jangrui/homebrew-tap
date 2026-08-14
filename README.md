@@ -43,6 +43,7 @@ brew uninstall <name>
 | [qoderwake-cn](./Casks/qoderwake-cn.rb) | QoderWake CN,全天在线的数字员工 | [qoder.com.cn](https://qoder.com.cn/) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
 | [reasonix-app](./Casks/reasonix-app.rb) | Reasonix Desktop,DeepSeek 原生 AI coding agent 桌面端(prefix-cache 稳定性设计) | [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) |
+| [recordly](./Casks/recordly.rb) | Recordly 创作者向屏幕录制工具,自动缩放、光标特效、背景与标注,免剪辑直出成品视频 | [recordly.dev](https://recordly.dev/) |
 | [trae-work](./Casks/trae-work.rb) | byteDance TRAE Work 桌面端,AI agent 三模式(work/code/design),Web/Desktop/Mobile 跨端 | [trae.ai](https://www.trae.ai/) |
 | [unsloth](./Casks/unsloth.rb) | Unsloth Desktop,本地运行与训练 LLM/扩散模型,仅 Apple Silicon | [unslothai/unsloth](https://github.com/unslothai/unsloth) |
 | [wps-note](./Casks/wps-note.rb) | WPS AI 笔记,录音转写 + AI 智能助理(WPS AI)+ 多端云同步 | [ainote.kdocs.cn](https://ainote.kdocs.cn/) |
