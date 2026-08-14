@@ -30,7 +30,9 @@ class CamofoxBrowser < Formula
     ENV["PYTHON"] = "/usr/bin/python3"
     ENV["npm_config_python"] = "/usr/bin/python3"
 
-    system "npm", "install", *std_npm_args(ignore_scripts: false)
+    # better-sqlite3 源码编译在 node 26 头文件 + Apple libc++(单体 <compare> 缺
+    # three_way_comparable_with)下必挂,剔除后 prebuild-install 走官方预编译
+    system "npm", "install", *std_npm_args(ignore_scripts: false).reject { |arg| arg == "--build-from-source" }
     bin.install_symlink libexec.glob("bin/*")
 
     return unless OS.mac?
