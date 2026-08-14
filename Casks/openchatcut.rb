@@ -1,14 +1,14 @@
 cask "openchatcut" do
-  version "0.2.2"
+  version "0.2.3"
 
   on_arm do
-    sha256 "cf272e33de4a5edb75a0998a2219438714a5670385665ffac9c1ec5168771d17"
+    sha256 "a697fd0e65080e13ae914c23ff4b85478f7b47c952113961c2e450375fe82e70"
 
     url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-arm64.dmg",
         verified: "github.com/0xsline/OpenChatCut/"
   end
   on_intel do
-    sha256 "929b6dc68159f7fa0400fd360327943fcf41ae61f6dec1fb3dc00050a05e6a8a"
+    sha256 "0d05b036cdf9b0258b30d6f5aa68eebeea453601cecf02f32e594c265a76abf5"
 
     url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-x64.dmg",
         verified: "github.com/0xsline/OpenChatCut/"
