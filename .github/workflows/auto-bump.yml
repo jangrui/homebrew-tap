@@ -456,6 +456,96 @@ jobs:
             echo "✅ $name: 已推到分支 $branch"
           }
 
+          apply_os_split_cask_bump() {
+            local name="$1" latest="$2"
+            local cask_path="Casks/${name}.rb"
+            echo "🚀 $name: OS 分版 cask 路径(逐 url stanza 重算 sha256)"
+
+            if ! ruby - "$cask_path" "$latest" <<'RUBY'; then
+              require "digest"
+              require "tmpdir"
+
+              path, latest = ARGV
+              empty_sha = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              lines = File.read(path).lines
+              failures = []
+
+              find_sha_idx = lambda do |from, step, boundary|
+                j = from
+                while j >= 0 && j < lines.length && (step > 0 ? j <= boundary : j >= boundary)
+                  break if lines[j] =~ /^[ \t]*url "/
+                  return j if lines[j] =~ /^[ \t]*sha256 "[0-9a-f]{64}"/
+                  j += step
+                end
+                nil
+              end
+
+              i = 0
+              while i < lines.length
+                if lines[i] =~ /^[ \t]*url "([^"]+)"/
+                  template = $1
+                  sha_idx = find_sha_idx.call(i - 1, -1, i - 3) || find_sha_idx.call(i + 1, 1, i + 3)
+
+                  if sha_idx
+                    unless template.include?('#{version}')
+                      failures << "url 不含 \#{version} 模板,无法推导新版地址: #{template}"
+                      i += 1
+                      next
+                    end
+                    concrete = template.gsub('#{version}', latest)
+                    puts "  → #{concrete}"
+                    sha = nil
+                    Dir.mktmpdir do |dir|
+                      tmp = File.join(dir, "dl")
+                      if !system("curl", "-fsSL", "--retry", "3", concrete, "-o", tmp)
+                        failures << "下载失败: #{concrete}"
+                      elsif File.size(tmp).zero?
+                        failures << "下载是空文件: #{concrete}"
+                      else
+                        sha = Digest::SHA256.file(tmp).hexdigest
+                      end
+                    end
+                    if sha == empty_sha
+                      failures << "sha256 是空字符串占位: #{concrete}"
+                    elsif sha
+                      lines[sha_idx] = lines[sha_idx].sub(/sha256 "[0-9a-f]{64}"/, %Q(sha256 "#{sha}"))
+                      puts "    sha256: #{sha}"
+                    end
+                    i = sha_idx if sha_idx > i
+                  end
+                end
+                i += 1
+              end
+
+              unless failures.empty?
+                failures.each { |f| warn "⚠️  #{f}" }
+                exit 1
+              end
+
+              src = lines.join
+              unless src.sub!(/^  version "[^"]+"/, %Q(  version "#{latest}"))
+                warn "⚠️  没找到 version stanza"
+                exit 1
+              end
+              File.write(path, src)
+          RUBY
+              echo "⚠️  $name: OS 分版重写失败,文件未改动"
+              return 1
+            fi
+
+            brew style --except-cops FormulaAudit/LivecheckUrlSymbol "$cask_path" >/dev/null || { echo "⚠️  $name: brew style 失败,回滚"; git checkout -- "$cask_path"; return 1; }
+
+            local current
+            current=$(git show HEAD:"$cask_path" | grep -E '^  version "' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+            git add "$cask_path" || return 1
+            git commit -m "auto-bump($name): $current → $latest" >/dev/null || return 1
+            local branch="bump-${name}-${latest}"
+            git checkout -B "$branch" || return 1
+            push_branch "$branch" >/dev/null || return 1
+            git checkout main >/dev/null || return 1
+            echo "✅ $name: 已推到分支 $branch"
+          }
+
           bump_one() {
             local kind="$1" name="$2"
             local flag="--cask"; [ "$kind" = "formula" ] && flag="--formula"
@@ -503,7 +593,9 @@ jobs:
 
             sync_main || { echo "❌ $name: 无法同步 origin/main"; return 1; }
 
-            if [ "$kind" = "cask" ] && ! grep -qE 'url "[^"]*#\{version\}' "Casks/${name}.rb"; then
+            if [ "$kind" = "cask" ] && grep -qE '^  on_(catalina|big_sur|monterey|ventura|sonoma|sequoia|tahoe)' "Casks/${name}.rb"; then
+              apply_os_split_cask_bump "$name" "$latest" || return 1
+            elif [ "$kind" = "cask" ] && ! grep -qE 'url "[^"]*#\{version\}' "Casks/${name}.rb"; then
               apply_electron_builder_bump "$name" "$latest" || return 1
             elif [ "$kind" = "formula" ] && [ "$(awk '/livecheck do/{lc=1} lc&&/^  end/{lc=0; next} !lc&&/^[[:space:]]+url "/{n++} END{print n+0}' "Formula/${name}.rb")" -gt 1 ]; then
               apply_multiarch_formula_bump "$name" "$latest" || return 1
