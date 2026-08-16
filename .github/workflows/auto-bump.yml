@@ -31,6 +31,129 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
+          repo_name=$(gh repo view --json nameWithOwner --jq '.nameWithOwner') || { echo "❌ 无法识别当前仓库"; exit 1; }
+
+          sync_main() {
+            git fetch --quiet origin main || return 1
+            git checkout -B main origin/main >/dev/null || return 1
+          }
+
+          push_branch() {
+            local branch="$1" remote_sha
+            remote_sha=$(git ls-remote --heads origin "$branch" | awk 'NR == 1 { print $1 }') || return 1
+            if [ -n "$remote_sha" ]; then
+              git push --force-with-lease="refs/heads/${branch}:${remote_sha}" origin "$branch"
+            else
+              git push origin "$branch"
+            fi
+          }
+
+          read_pr_status() {
+            gh pr view "$1" --json state,mergedAt,autoMergeRequest --jq '[.state,(.mergedAt // ""),(.autoMergeRequest != null)] | @tsv' 2>/dev/null || true
+          }
+
+          main_contains_pr_head() {
+            local pr_ref="$1" number files path expected actual found=0
+            number=$(gh pr view "$pr_ref" --json number --jq '.number') || return 1
+            files=$(gh api "repos/${repo_name}/pulls/${number}/files?per_page=100" --paginate --jq '.[] | [.filename,.sha] | @tsv') || return 1
+            while IFS=$'\t' read -r path expected; do
+              [ -z "$path" ] && continue
+              found=1
+              actual=$(git rev-parse "origin/main:${path}" 2>/dev/null) || return 1
+              [ "$actual" = "$expected" ] || return 1
+            done <<< "$files"
+            [ "$found" -eq 1 ]
+          }
+
+          close_stale_pr() {
+            local pr_ref="$1" state head_ref
+            state=$(gh pr view "$pr_ref" --json state --jq '.state') || return 1
+            case "$state" in
+              OPEN|CLOSED|MERGED) ;;
+              *) return 1 ;;
+            esac
+            head_ref=$(gh pr view "$pr_ref" --json headRefName --jq '.headRefName') || return 1
+            if [ "$state" = "OPEN" ]; then
+              if ! gh pr close "$pr_ref" --comment "主线已包含该 PR 的全部文件内容,关闭状态残留的自动 bump PR。" >/dev/null; then
+                state=$(gh pr view "$pr_ref" --json state --jq '.state' 2>/dev/null || true)
+                case "$state" in
+                  CLOSED|MERGED) ;;
+                  *) return 1 ;;
+                esac
+              fi
+            fi
+            if [ -n "$head_ref" ]; then
+              gh api --method DELETE "repos/${repo_name}/git/refs/heads/${head_ref}" >/dev/null 2>&1 || true
+            fi
+          }
+
+          merge_pr() {
+            local pr_ref="$1"
+            local attempt output status verify
+            for attempt in 1 2 3; do
+              status=$(read_pr_status "$pr_ref")
+              if [[ "$status" == MERGED$'\t'* ]]; then
+                echo "✅ $pr_ref: PR 已合并"
+                return 0
+              fi
+              if [[ "$status" == OPEN$'\t'*$'\ttrue' ]]; then
+                echo "✅ $pr_ref: 自动合并已登记,等待 GitHub 完成"
+                return 0
+              fi
+              output=""
+              if output=$(gh pr merge "$pr_ref" --squash --auto 2>&1); then
+                printf '%s\n' "$output"
+                for verify in 1 2 3 4 5; do
+                  status=$(read_pr_status "$pr_ref")
+                  if [[ "$status" == MERGED$'\t'* ]]; then
+                    echo "✅ $pr_ref: PR 已合并"
+                    return 0
+                  fi
+                  if [[ "$status" == OPEN$'\t'*$'\ttrue' ]]; then
+                    echo "✅ $pr_ref: 自动合并已登记,等待 GitHub 完成"
+                    return 0
+                  fi
+                  [ "$verify" -lt 5 ] && sleep 2
+                done
+                if printf '%s\n' "$output" | grep -qiE 'will be (added to the merge queue|automatically merged)|already queued to merge'; then
+                  echo "✅ $pr_ref: GitHub 已接受自动合并/入队请求"
+                  return 0
+                fi
+              fi
+              [ -n "${output:-}" ] && printf '%s\n' "$output"
+              if [ "$attempt" -lt 3 ]; then
+                echo "⚠️  $pr_ref: 自动合并命令失败,准备第 $((attempt + 1)) 次尝试"
+                sleep $((attempt * 5))
+              fi
+            done
+            status=$(read_pr_status "$pr_ref")
+            if [[ "$status" == MERGED$'\t'* ]]; then
+              echo "✅ $pr_ref: PR 已合并"
+              return 0
+            fi
+            if [[ "$status" == OPEN$'\t'*$'\ttrue' ]]; then
+              echo "✅ $pr_ref: 自动合并已登记,等待 GitHub 完成"
+              return 0
+            fi
+            sync_main || { echo "❌ $pr_ref: 无法同步 origin/main 进行主线对账"; return 1; }
+            if main_contains_pr_head "$pr_ref"; then
+              echo "⚠️  $pr_ref: 主线已包含 PR 内容,关闭状态残留的 PR"
+              close_stale_pr "$pr_ref" || { echo "❌ $pr_ref: 关闭状态残留 PR 失败"; return 1; }
+              return 0
+            fi
+            status=$(read_pr_status "$pr_ref")
+            if [[ "$status" == MERGED$'\t'* ]]; then
+              echo "✅ $pr_ref: PR 已合并"
+              return 0
+            fi
+            if [[ "$status" == OPEN$'\t'*$'\ttrue' ]]; then
+              echo "✅ $pr_ref: 自动合并已登记,等待 GitHub 完成"
+              return 0
+            fi
+            status=$(gh pr view "$pr_ref" --json state,mergeStateStatus,mergedAt,mergeCommit,autoMergeRequest --jq '[.state,.mergeStateStatus,(.mergedAt // ""),(.mergeCommit.oid // ""),(.autoMergeRequest != null)] | @tsv' 2>/dev/null || true)
+            echo "❌ $pr_ref: 自动合并失败,PR 状态: ${status:-unknown}"
+            return 1
+          }
 
           apply_electron_builder_bump() {
             local name="$1" latest="$2"
@@ -235,12 +358,12 @@ jobs:
 
             local current
             current=$(git show HEAD:"$cask_path" | grep -E '^  version "' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
-            git add "$cask_path"
-            git commit -m "auto-bump($name): $current → $latest" >/dev/null
+            git add "$cask_path" || return 1
+            git commit -m "auto-bump($name): $current → $latest" >/dev/null || return 1
             local branch="bump-${name}-${latest}"
-            git checkout -B "$branch"
-            git push --force-with-lease origin "$branch" >/dev/null
-            git checkout main >/dev/null
+            git checkout -B "$branch" || return 1
+            push_branch "$branch" >/dev/null || return 1
+            git checkout main >/dev/null || return 1
             echo "✅ $name: 已推到分支 $branch"
           }
 
@@ -324,12 +447,12 @@ jobs:
 
             local current
             current=$(git show HEAD:"$formula_path" | grep -E '^  version "' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
-            git add "$formula_path"
-            git commit -m "auto-bump($name): $current → $latest" >/dev/null
+            git add "$formula_path" || return 1
+            git commit -m "auto-bump($name): $current → $latest" >/dev/null || return 1
             local branch="bump-${name}-${latest}"
-            git checkout -B "$branch"
-            git push --force-with-lease origin "$branch" >/dev/null
-            git checkout main >/dev/null
+            git checkout -B "$branch" || return 1
+            push_branch "$branch" >/dev/null || return 1
+            git checkout main >/dev/null || return 1
             echo "✅ $name: 已推到分支 $branch"
           }
 
@@ -337,6 +460,8 @@ jobs:
             local kind="$1" name="$2"
             local flag="--cask"; [ "$kind" = "formula" ] && flag="--formula"
             local bump_cmd="bump-cask-pr"; [ "$kind" = "formula" ] && bump_cmd="bump-formula-pr"
+
+            sync_main || { echo "❌ $name: 无法同步 origin/main"; return 1; }
 
             echo "============================================"
             echo "Livecheck ($kind): $name"
@@ -353,8 +478,19 @@ jobs:
             fi
 
             echo "当前版本: $current / 最新版本: $latest"
+            local branch="bump-${name}-${latest}"
 
             if [ "$current" = "$latest" ]; then
+              open_pr_url=$(gh pr list --head "$branch" --state open --json url --jq '.[0].url // empty') || { echo "❌ $name: 无法查询 OPEN PR"; return 1; }
+              if [ -n "$open_pr_url" ]; then
+                sync_main || { echo "❌ $name: 无法同步 origin/main 清理状态残留 PR"; return 1; }
+                if main_contains_pr_head "$open_pr_url"; then
+                  close_stale_pr "$open_pr_url" || { echo "❌ $name: 关闭状态残留 PR 失败"; return 1; }
+                else
+                  echo "❌ $name: OPEN PR 内容未完全落地主线: $open_pr_url"
+                  return 1
+                fi
+              fi
               echo "✅ $name 已是最新,无需更新"
               return
             fi
@@ -365,12 +501,12 @@ jobs:
               return
             fi
 
-            local branch="bump-${name}-${latest}"
+            sync_main || { echo "❌ $name: 无法同步 origin/main"; return 1; }
 
             if [ "$kind" = "cask" ] && ! grep -qE 'url "[^"]*#\{version\}' "Casks/${name}.rb"; then
-              apply_electron_builder_bump "$name" "$latest" || return
+              apply_electron_builder_bump "$name" "$latest" || return 1
             elif [ "$kind" = "formula" ] && [ "$(awk '/livecheck do/{lc=1} lc&&/^  end/{lc=0; next} !lc&&/^[[:space:]]+url "/{n++} END{print n+0}' "Formula/${name}.rb")" -gt 1 ]; then
-              apply_multiarch_formula_bump "$name" "$latest" || return
+              apply_multiarch_formula_bump "$name" "$latest" || return 1
             else
               echo "🚀 $name: $current → $latest,开始 bump"
               style_flag="--no-style"; [ "$kind" = "formula" ] && style_flag=""
@@ -380,26 +516,31 @@ jobs:
                 --no-audit \
                 $style_flag \
                 --write-only \
-                --commit || { echo "⚠️  $bump_cmd --write-only 失败,见上方日志"; return; }
+                --commit || { echo "⚠️  $bump_cmd --write-only 失败,见上方日志"; return 1; }
 
-              git checkout -B "$branch"
-              git push --force-with-lease origin "$branch"
-              git checkout main
+              git checkout -B "$branch" || { echo "❌ $name: 无法创建 bump 分支"; return 1; }
+              push_branch "$branch" || { echo "❌ $name: 无法推送 bump 分支"; return 1; }
+              git checkout main || { echo "❌ $name: 无法切回 main"; return 1; }
             fi
 
-            if gh pr view "$branch" --json number --state open >/dev/null 2>&1; then
-              echo "ℹ️  $name: 已有 OPEN 状态的 PR,跳过"
+            expected_head=$(git rev-parse "$branch") || { echo "❌ $name: 无法读取 bump 分支 head"; return 1; }
+            open_pr_url=$(gh pr list --head "$branch" --state open --json url --jq '.[0].url // empty') || { echo "❌ $name: 无法查询 OPEN PR"; return 1; }
+            if [ -n "$open_pr_url" ]; then
+              echo "ℹ️  $name: 已有 OPEN 状态的 PR,尝试自动合并"
+              pr_url="$open_pr_url"
             else
               pr_body=$(printf '自动同步上游版本。\n\n- 类型: `%s`\n- 旧版本: `%s`\n- 新版本: `%s`\n\n由 GitHub Actions 自动生成并合并。' "$kind" "$current" "$latest")
-              pr_url=$(gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch")
+              pr_url=$(gh pr create --title "bump ${name} ${current} → ${latest}" --body "$pr_body" --base main --head "$branch") || { echo "❌ $name: 无法创建 PR"; return 1; }
               echo "✅ PR 已创建: $pr_url"
               sleep 2
-              if gh pr merge "$branch" --squash --auto --delete-branch 2>&1; then
-                echo "✅ PR 已自动合并"
-              else
-                echo "⚠️  自动合并未成功(可能需要手动 Merge): $pr_url"
-              fi
             fi
+            pr_head=$(gh pr view "$pr_url" --json headRefOid --jq '.headRefOid') || { echo "❌ $name: 无法读取 PR head"; return 1; }
+            if [ "$pr_head" != "$expected_head" ]; then
+              echo "❌ $name: PR head 与本轮推送不一致(期望 $expected_head,实际 $pr_head)"
+              return 1
+            fi
+            merge_pr "$pr_url" || { echo "❌ 自动合并未成功: $pr_url"; return 1; }
+            echo "✅ PR 自动合并请求已处理"
           }
 
           errors=0
