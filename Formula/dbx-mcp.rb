@@ -1,8 +1,8 @@
 class DbxMcp < Formula
   desc "DBX 数据库 MCP server,让 AI agent 查询 MySQL/PostgreSQL 等数据库"
   homepage "https://github.com/t8y2/dbx/tree/main/packages/mcp-server"
-  url "https://registry.npmjs.org/@dbx-app/mcp-server/-/mcp-server-0.4.66.tgz"
-  sha256 "f692caac9db11075d95189d3a6cde2366590f8f84584f23b91a6d9541bdd35e4"
+  url "https://registry.npmjs.org/@dbx-app/mcp-server/-/mcp-server-0.4.68.tgz"
+  sha256 "b60b30b9798a9db152c69238615126968783a63e6d9e5af80f55ddc1f20386b6"
   license "Apache-2.0"
 
   livecheck do
