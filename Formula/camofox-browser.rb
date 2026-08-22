@@ -63,8 +63,9 @@ class CamofoxBrowser < Formula
     2.times do
       break if fetched
 
-      system({ "HOME" => real_home.to_s }, node.to_s,
-             (pkg/"node_modules/camoufox-js/dist/__main__.js").to_s, "fetch")
+      fetch_pid = Process.spawn({ "HOME" => real_home.to_s }, node.to_s,
+                                (pkg/"node_modules/camoufox-js/dist/__main__.js").to_s, "fetch")
+      Process.wait(fetch_pid)
       fetched = (cache/"version.json").exist?
       sleep 5 unless fetched
     end
