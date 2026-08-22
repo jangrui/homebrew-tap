@@ -19,7 +19,7 @@ cask "trae-work" do
   livecheck do
     url "https://icube-normal.traeapi.us/icube/api/v1/native/version/trae/latest"
     strategy :json do |json|
-      json.dig("data", "solo", "darwin", "version")
+      json.dig("data", "solo", "darwin", "download", 0, "apple")[%r{/stable/(\d+(?:\.\d+)+)/}, 1]
     end
   end
 
