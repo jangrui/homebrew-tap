@@ -546,7 +546,8 @@ jobs:
             echo "✅ $name: 已推到分支 $branch"
           }
 
-          bump_one() {
+          bump_status="error"
+          _bump_one() {
             local kind="$1" name="$2"
             local flag="--cask"; [ "$kind" = "formula" ] && flag="--formula"
             local bump_cmd="bump-cask-pr"; [ "$kind" = "formula" ] && bump_cmd="bump-formula-pr"
@@ -564,6 +565,7 @@ jobs:
 
             if [ -z "$latest" ] || [ "$latest" = "N/A" ]; then
               echo "⚠️  $name: 查不到最新版本,跳过"
+              bump_status="skipped"
               return
             fi
 
@@ -582,12 +584,14 @@ jobs:
                 fi
               fi
               echo "✅ $name 已是最新,无需更新"
+              bump_status="same"
               return
             fi
 
             newer=$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -1)
             if [ "$newer" != "$latest" ]; then
               echo "✅ $name 配方版本($current)领先上游报告($latest),跳过防止降级"
+              bump_status="same"
               return
             fi
 
@@ -633,7 +637,24 @@ jobs:
             fi
             merge_pr "$pr_url" || { echo "❌ 自动合并未成功: $pr_url"; return 1; }
             echo "✅ PR 自动合并请求已处理"
+            bump_status="updated"
           }
+
+          bump_one() {
+            local kind="$1" name="$2"
+            bump_status="error"
+            _bump_one "$kind" "$name"
+            local rc=$?
+            echo "| ${name} | ${kind} | ${bump_status} |" >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
+            return "$rc"
+          }
+
+          {
+            echo "## Livecheck 状态"
+            echo ""
+            echo "| 包 | 类型 | 状态 |"
+            echo "|---|---|---|"
+          } >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
 
           errors=0
           for f in Casks/*.rb; do
@@ -649,3 +670,25 @@ jobs:
             exit 1
           fi
           echo "完成。如有更新,PR 会自动合并到 main(无需人工干预)。"
+
+  notify-failure:
+    needs: bump
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open failure alert issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="🛎 Auto Bump 失败 $(TZ=Asia/Shanghai date +%Y-%m-%d)"
+          if gh issue list -R "$REPO" --state open --json title --jq '.[].title' | grep -Fxq "$title"; then
+            echo "今日告警 issue 已存在,跳过: $title"
+            exit 0
+          fi
+          gh issue create -R "$REPO" --title "$title" --body "auto-bump 运行失败,详见: ${RUN_URL}" >/dev/null
+          echo "已开告警 issue: $title"
