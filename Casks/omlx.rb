@@ -18,6 +18,7 @@ cask "omlx" do
 
   livecheck do
     url "https://github.com/jundot/omlx/releases"
+    regex(/\Av?(\d+(?:\.\d+)+)\Z/)
     strategy :github_releases
   end
 
