@@ -4,14 +4,12 @@ cask "wps-note" do
   on_arm do
     sha256 "6e71ad2d7c7392a159874130696e774009d97d6e59247af7c411000df754912f"
 
-    url "https://ainote.wpscdn.cn/downloads/mac/v#{version}/WPS%E7%AC%94%E8%AE%B0-#{version}-arm64.dmg",
-        verified: "ainote.wpscdn.cn/downloads/mac/"
+    url "https://ainote.wpscdn.cn/downloads/mac/v#{version}/WPS%E7%AC%94%E8%AE%B0-#{version}-arm64.dmg"
   end
   on_intel do
     sha256 "e07565fba13eb38163c151c748a3b3397fd44394ecff7b0d1464fb02fab1eea5"
 
-    url "https://ainote.wpscdn.cn/downloads/mac/v#{version}/WPS%E7%AC%94%E8%AE%B0-#{version}-x64.dmg",
-        verified: "ainote.wpscdn.cn/downloads/mac/"
+    url "https://ainote.wpscdn.cn/downloads/mac/v#{version}/WPS%E7%AC%94%E8%AE%B0-#{version}-x64.dmg"
   end
 
   name "WPS笔记"
@@ -25,9 +23,12 @@ cask "wps-note" do
     end
   end
 
+  auto_updates true
   depends_on macos: :big_sur
 
   app "WPS笔记.app"
+
+  uninstall quit: "cn.kdocs.ai-note"
 
   zap trash: [
     "~/Library/Application Support/WPS笔记",

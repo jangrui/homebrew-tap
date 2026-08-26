@@ -2,8 +2,7 @@ cask "marvis" do
   version :latest
   sha256 :no_check
 
-  url "https://marvis.qq.com/download/dmg",
-      verified: "marvis.qq.com/download/"
+  url "https://marvis.qq.com/download/dmg"
   name "Marvis"
   desc "腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控)"
   homepage "https://marvis.qq.com/"
@@ -16,6 +15,8 @@ cask "marvis" do
   depends_on macos: :monterey
 
   app "Marvis.app"
+
+  uninstall quit: "com.tencent.mac.marvis"
 
   zap trash: [
     "~/Library/Application Support/Marvis",

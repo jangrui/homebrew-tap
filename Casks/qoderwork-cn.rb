@@ -23,6 +23,8 @@ cask "qoderwork-cn" do
 
   app "QoderWork CN.app"
 
+  uninstall quit: "com.qoder.work.cn"
+
   zap trash: [
     "~/Library/Application Support/QoderWork CN",
     "~/Library/Caches/com.qoder.work.cn",

@@ -24,9 +24,12 @@ cask "qoder-cn" do
     regex(/\A.*?v?(\d+(?:\.\d+)+)/im)
   end
 
+  auto_updates true
   depends_on macos: :monterey
 
   app "Qoder CN.app"
+
+  uninstall quit: "com.aliyun.lingma.ide"
 
   zap trash: [
     "~/Library/Application Support/Qoder CN",

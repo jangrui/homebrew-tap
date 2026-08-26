@@ -21,9 +21,12 @@ cask "recordly" do
     strategy :github_releases
   end
 
+  auto_updates true
   depends_on macos: :monterey
 
   app "Recordly.app"
+
+  uninstall quit: "dev.recordly.app"
 
   zap trash: [
     "~/Library/Application Support/Recordly",

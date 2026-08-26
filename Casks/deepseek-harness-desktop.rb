@@ -12,9 +12,12 @@ cask "deepseek-harness-desktop" do
     strategy :github_releases
   end
 
+  auto_updates true
   depends_on macos: :monterey
 
   app "DSH Desktop.app"
+
+  uninstall quit: "ai.deepseek.dsh.desktop"
 
   zap trash: [
     "~/Library/Application Support/@deepseek-ai/dsh-desktop",

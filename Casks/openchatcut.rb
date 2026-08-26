@@ -4,14 +4,12 @@ cask "openchatcut" do
   on_arm do
     sha256 "3491283db71ac6deda5deedec6ea2c6b473505971a92574973bdf9d9893c051f"
 
-    url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-arm64.dmg",
-        verified: "github.com/0xsline/OpenChatCut/"
+    url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-arm64.dmg"
   end
   on_intel do
     sha256 "256d143ec959e490c5507c21217b37c1012e875dca6f04bedc8288266341fd8b"
 
-    url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-x64.dmg",
-        verified: "github.com/0xsline/OpenChatCut/"
+    url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-x64.dmg"
   end
 
   name "OpenChatCut"
@@ -23,6 +21,7 @@ cask "openchatcut" do
     strategy :github_releases
   end
 
+  auto_updates true
   depends_on macos: :monterey
 
   app "OpenChatCut.app"
@@ -31,6 +30,8 @@ cask "openchatcut" do
     system_command "/usr/bin/xattr",
                    args: ["-rd", "com.apple.quarantine", "#{appdir}/OpenChatCut.app"]
   end
+
+  uninstall quit: "dev.openchatcut.app"
 
   zap trash: [
     "~/Library/Application Support/OpenChatCut",

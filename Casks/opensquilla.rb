@@ -12,10 +12,13 @@ cask "opensquilla" do
     strategy :github_releases
   end
 
+  auto_updates true
   depends_on arch: :arm64
   depends_on macos: :monterey
 
   app "OpenSquilla.app"
+
+  uninstall quit: "ai.opensquilla.desktop"
 
   zap trash: [
     "~/Library/Application Support/OpenSquilla",
