@@ -1,15 +1,15 @@
 cask "qoder-cn" do
   arch arm: "arm64", intel: "x64"
 
-  version "1.26.0"
+  version "1.27.0"
 
   on_arm do
-    sha256 "29876a10d2f826825b14f0441e03fb0fcd7809e3b4a7ebc485f90cd676410676"
+    sha256 "2174778d5e9407c56f8bad322d7bef22ec461169d6d020d9c7dd1f01496fada8"
 
     url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-arm64.dmg"
   end
   on_intel do
-    sha256 "072a8a5ab45a3dcb982985d8a5b841d2568d021e0e760f4f70d694da61fcbae2"
+    sha256 "2cd259fc9a587ca36c18929a89e74a75aec99225d4ebd3aac034d9d8aaa9ff43"
 
     url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-x64.dmg"
   end
@@ -19,7 +19,7 @@ cask "qoder-cn" do
   homepage "https://qoder.com.cn/"
 
   livecheck do
-    url "https://docs.qoder.cn/product-overview/qoder-cn-update-log.md"
+    url "https://docs.qoder.cn/product-overview/qoder-cn-ide-update-log.md"
     strategy :page_match
     regex(/\A.*?v?(\d+(?:\.\d+)+)/im)
   end
