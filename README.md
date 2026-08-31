@@ -33,6 +33,7 @@ brew uninstall <name>
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
 | [marvis](./Casks/marvis.rb) | 腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控),仅 arm64 | [marvis.qq.com](https://marvis.qq.com/) |
 | [minimax-code](./Casks/minimax-code.rb) | MiniMax Agent 桌面端,多 Agent 协作 + 工作区文件批量处理 + 浏览器自动化 | [agent.minimaxi.com](https://agent.minimaxi.com) |
+| [minimax-design](./Casks/minimax-design.rb) | MiniMax AI Agent 创作平台,覆盖调研、脚本、图像、视频、配音的完整内容生产链路 | [design.minimaxi.com](https://design.minimaxi.com/) |
 | [mouser](./Casks/mouser.rb) | Logitech Options+ 开源替代品,HID++ 鼠标按键重映射 + 按应用配置 | [TomBadash/Mouser](https://github.com/TomBadash/Mouser) |
 | [omlx](./Casks/omlx.rb) | oMLX,Apple Silicon 本地 LLM 推理服务器(连续批处理 + SSD 分层 KV 缓存,菜单栏管理),仅 arm64 | [jundot/omlx](https://github.com/jundot/omlx) |
 | [omniroute-app](./Casks/omniroute-app.rb) | OmniRoute 桌面端(Electron),统一 AI 网关,聚合 160+ 提供商的浏览器仪表盘 | [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) |
