@@ -1,7 +1,7 @@
 class Wps365Cli < Formula
   desc "WPS 365 命令行工具"
   homepage "https://github.com/wps365-open/cli"
-  version "0.3.4"
+  version "0.3.5"
 
   livecheck do
     url "https://github.com/wps365-open/cli/releases/latest"
@@ -12,12 +12,12 @@ class Wps365Cli < Formula
     on_arm do
       url "https://github.com/wps365-open/cli/releases/download/v#{version}/wps365-cli-aarch64-apple-darwin.tar.gz",
           verified: "github.com/wps365-open/cli/"
-      sha256 "e3930b651d220e9c69cee5dceb1e88b1b2480d66f8604f5ebe3a701c20ee7bb3"
+      sha256 "819c0706c25af0ff694f5eb924bfe2dcd89b8321589ef3b34ed438cac48b93e5"
     end
     on_intel do
       url "https://github.com/wps365-open/cli/releases/download/v#{version}/wps365-cli-x86_64-apple-darwin.tar.gz",
           verified: "github.com/wps365-open/cli/"
-      sha256 "23b4f85626bf675581dbc641d6fc74354dbb9ce277c09a4bb536919dc05ce7fa"
+      sha256 "98f417deb55f544ca79bd01deb5e651a72e18ac1c244a3f027c95cc2dc50d0e3"
     end
   end
 
@@ -25,12 +25,12 @@ class Wps365Cli < Formula
     on_arm do
       url "https://github.com/wps365-open/cli/releases/download/v#{version}/wps365-cli-aarch64-unknown-linux-gnu.tar.gz",
           verified: "github.com/wps365-open/cli/"
-      sha256 "99a609349ee3cd0084319b4599fb08148da6f141ec8231e59d21ed8e1e4481ca"
+      sha256 "13c2aae59922b1b149fa61ce007be80ed6cd86e7adc21d33baffb32c16972543"
     end
     on_intel do
       url "https://github.com/wps365-open/cli/releases/download/v#{version}/wps365-cli-x86_64-unknown-linux-gnu.tar.gz",
           verified: "github.com/wps365-open/cli/"
-      sha256 "19b6b5a7950ebaf34f153ff7163d6c11ca4ca89b51988b15ec50773f264ba7b3"
+      sha256 "eed4408786da4e4abc10bfe78275ab6a8f3f021bba1c7b6625616077fb7e84d0"
     end
   end
 
