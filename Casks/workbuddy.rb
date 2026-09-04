@@ -1,15 +1,15 @@
 cask "workbuddy" do
   arch arm: "arm64", intel: "x64"
 
-  version "5.4.7.37521366-b148bd1d"
+  version "5.5.3.37748631-104760a2"
 
   on_arm do
-    sha256 "4ddebbda8f9e9c3dc8a42b162ab6986c6a391b70b9722909d68eb0cbbe26c3f6"
+    sha256 "ea3e86b697bb2baca7d8c9ecd2e1e943d7c77842812cf00de245c6972fbac273"
 
     url "https://download.codebuddy.cn/workbuddy/saas/darwin-arm64/WorkBuddy-darwin-arm64-#{version}.dmg"
   end
   on_intel do
-    sha256 "cd72489d8a72f6b30fbf314be95f2600dbe23aa01445eacf11c3159b37a07da8"
+    sha256 "628d3991862b5eece4fba88d9054bcc1bf28975db249c71188e8e3327123f8cd"
 
     url "https://download.codebuddy.cn/workbuddy/saas/darwin-x64/WorkBuddy-darwin-x64-#{version}.dmg"
   end
