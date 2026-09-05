@@ -1,13 +1,13 @@
 cask "trae-work" do
-  version "2.3.79944"
+  version "2.3.81346"
 
   on_arm do
-    sha256 "28b8cecfddb6740838184a20b30754aed110ea4fdfc6a6d4dbee4f92a0cc4eee"
+    sha256 "3aea1758a0e5f81b3e0b43c210c078ddd08a94e027d494f6acde3287f34fd560"
 
     url "https://lf-cdn.trae.ai/obj/trae-ai-us/pkg/app/releases/stable/#{version}/darwin/TraeWork-darwin-arm64.dmg"
   end
   on_intel do
-    sha256 "bf0846d05b96edb5c87dfa68168423a91314a5dbdc7c8d4a930e0d4054171af1"
+    sha256 "a6da2cd9e244ac39d0e8ddd60d504038af9288e50144a16d2ab27098f852b84b"
 
     url "https://lf-cdn.trae.ai/obj/trae-ai-us/pkg/app/releases/stable/#{version}/darwin/TraeWork-darwin-x64.dmg"
   end
