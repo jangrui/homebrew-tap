@@ -51,7 +51,6 @@ brew uninstall <name>
 | [unsloth](./Casks/unsloth.rb) | Unsloth Desktop,本地运行与训练 LLM/扩散模型,仅 Apple Silicon | [unslothai/unsloth](https://github.com/unslothai/unsloth) |
 | [wps-note](./Casks/wps-note.rb) | WPS AI 笔记,录音转写 + AI 智能助理(WPS AI)+ 多端云同步 | [ainote.kdocs.cn](https://ainote.kdocs.cn/) |
 | [workbuddy](./Casks/workbuddy.rb) | 腾讯 WorkBuddy AI 办公工作台(自然语言下任务、多 Agent 执行、交付文档/PPT,打通腾讯文档/会议/邮箱生态) | [www.workbuddy.cn](https://www.workbuddy.cn/) |
-| [zcode](./Casks/zcode.rb) | Z.ai 的 Agentic Development Environment,内置 GLM-5.2 coding agent | [zcode.z.ai](https://zcode.z.ai) |
 
 > **为什么自建?** 原作者 `bylinxx/homebrew-tap` 的 cask 长期不更新:
 > 1. macOS 版本限制用了新版 Homebrew 已废弃的字符串语法,每次操作弹 deprecation warning
