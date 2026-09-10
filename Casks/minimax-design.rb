@@ -1,13 +1,13 @@
 cask "minimax-design" do
-  version "3.0.13"
+  version "3.0.14"
 
   on_arm do
-    sha256 "9fc3852f328df26b869bbb59ed9db3c25765765263b47db0cb4b6f5b12465b84"
+    sha256 "750857f5a60151db81a57784ff3326922d0676de60141bb980bc841b944c5419"
 
     url "https://filecdn.minimax.chat/public/minimax-hub/release/domestic/MiniMax%20Design-#{version}-arm64.dmg"
   end
   on_intel do
-    sha256 "ffe3cb23c0566584ea068ec2e89f8154104df719dec6f55f5710fdb31727b893"
+    sha256 "9db284e092818d912ca1ed93d75b197b6f5a5a40ccaf018606635356bdc4a589"
 
     url "https://filecdn.minimax.chat/public/minimax-hub/release/domestic/MiniMax%20Design-#{version}-x64.dmg"
   end
