@@ -25,9 +25,9 @@ cask "omniroute-app" do
 
   app "OmniRoute.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-rd", "com.apple.quarantine", "#{appdir}/OmniRoute.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-rd", "com.apple.quarantine", "{{appdir}}/OmniRoute.app"]
   end
 
   zap trash: [

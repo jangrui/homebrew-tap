@@ -17,9 +17,9 @@ cask "pi-agent" do
 
   app "Pi Agent.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-rd", "com.apple.quarantine", "#{appdir}/Pi Agent.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-rd", "com.apple.quarantine", "{{appdir}}/Pi Agent.app"]
   end
 
   zap trash: [

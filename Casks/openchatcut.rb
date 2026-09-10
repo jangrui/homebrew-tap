@@ -26,9 +26,9 @@ cask "openchatcut" do
 
   app "OpenChatCut.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-rd", "com.apple.quarantine", "#{appdir}/OpenChatCut.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-rd", "com.apple.quarantine", "{{appdir}}/OpenChatCut.app"]
   end
 
   uninstall quit: "dev.openchatcut.app"

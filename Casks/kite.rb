@@ -6,16 +6,14 @@ cask "kite" do
 
   on_arm do
     sha256 "cc5264ba0c438dc258e5b4410fea38fe4c9b85448476c07581f6602fad9297a1"
-    url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-apple-silicon.dmg",
-        verified: "github.com/eryajf/kite-desktop/"
+    url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-apple-silicon.dmg"
   end
   on_intel do
     sha256 "8aa56fb58146403a9e1bea4758ce478a8076ffb4402df9e7808caca941632861"
-    url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-intel.dmg",
-        verified: "github.com/eryajf/kite-desktop/"
+    url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-intel.dmg"
   end
 
-  depends_on macos: :catalina
+  depends_on macos: :big_sur
 
   livecheck do
     url :url
@@ -24,9 +22,9 @@ cask "kite" do
 
   app "Kite.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-rd", "com.apple.quarantine", "#{appdir}/Kite.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-rd", "com.apple.quarantine", "{{appdir}}/Kite.app"]
   end
 
   zap trash: [

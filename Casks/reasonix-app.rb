@@ -2,8 +2,7 @@ cask "reasonix-app" do
   version "1.38.3"
   sha256 "79758430490fe05f771e95025d430f9d1d8bb0731438f346434dec5bcf1cf19c"
 
-  url "https://github.com/esengine/DeepSeek-Reasonix/releases/download/desktop-v#{version}/Reasonix-darwin-universal.dmg",
-      verified: "github.com/esengine/DeepSeek-Reasonix/"
+  url "https://github.com/esengine/DeepSeek-Reasonix/releases/download/desktop-v#{version}/Reasonix-darwin-universal.dmg"
   name "Reasonix Desktop"
   desc "DeepSeek 原生 AI coding agent 桌面端,围绕 prefix-cache 稳定性设计"
   homepage "https://reasonix.io/"
@@ -18,9 +17,9 @@ cask "reasonix-app" do
 
   app "Reasonix.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-rd", "com.apple.quarantine", "#{appdir}/Reasonix.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-rd", "com.apple.quarantine", "{{appdir}}/Reasonix.app"]
   end
 
   zap trash: [
