@@ -30,8 +30,6 @@ class CamofoxBrowser < Formula
     ENV["PYTHON"] = "/usr/bin/python3"
     ENV["npm_config_python"] = "/usr/bin/python3"
 
-    # better-sqlite3 源码编译在 node 26 头文件 + Apple libc++(单体 <compare> 缺
-    # three_way_comparable_with)下必挂,剔除后 prebuild-install 走官方预编译
     system "npm", "install", *std_npm_args(ignore_scripts: false).reject { |arg| arg == "--build-from-source" }
     bin.install_symlink libexec.glob("bin/*")
 
@@ -44,45 +42,32 @@ class CamofoxBrowser < Formula
 
       rm_r dir
     end
-  end
-
-  def post_install
-    return unless OS.mac?
 
     node = formula_opt_bin("node")/"node"
     pkg = libexec/"lib/node_modules/camofox-browser"
-
     binding_check = "new (require('#{pkg}/node_modules/better-sqlite3'))(':memory:')" \
                     ".exec('create table t(a)')"
     out, status = Open3.capture2e(node.to_s, "-e", binding_check)
     odie "better-sqlite3 原生绑定加载失败,请确认 CLT 正常(xcode-select -p)后 reinstall。\n#{out}" unless status.success?
+  end
 
-    real_home = Pathname.new(Etc.getpwuid.dir)
-    cache = real_home/"Library/Caches/camoufox"
-    fetched = (cache/"version.json").exist? && (cache/"Camoufox.app/Contents/MacOS/camoufox").exist?
-    2.times do
-      break if fetched
-
-      fetch_pid = Process.spawn({ "HOME" => real_home.to_s }, node.to_s,
-                                (pkg/"node_modules/camoufox-js/dist/__main__.js").to_s, "fetch")
-      Process.wait(fetch_pid)
-      fetched = (cache/"version.json").exist?
-      sleep 5 unless fetched
+  post_install_steps do
+    on_macos do
+      unless_path_exists "/Users/{{user}}/Library/Caches/camoufox/version.json" do
+        warn "Camoufox 浏览器二进制缺失,brew 安装沙箱不允许写 ~/Library/Caches/camoufox;" \
+             "请手动补拉(需访问 github.com/daijro/camoufox/releases)后 brew services restart camofox-browser:" \
+             "\n  {{HOMEBREW_PREFIX}}/opt/node/bin/node " \
+             "{{libexec}}/lib/node_modules/camofox-browser/node_modules/camoufox-js/dist/__main__.js fetch"
+      end
     end
-    return if fetched
-
-    odie <<~EOS
-      Camoufox 浏览器二进制下载失败(需要能访问 github.com/daijro/camoufox/releases)。
-      检查网络/代理后手动补拉,再 brew services restart camofox-browser:
-        #{node} #{pkg}/node_modules/camoufox-js/dist/__main__.js fetch
-    EOS
   end
 
   def caveats
     <<~EOS
       启动服务:brew services start camofox-browser
       REST API 默认监听 http://localhost:9377(/health 健康检查)。
-      浏览器二进制在 ~/Library/Caches/camoufox,损坏时删掉该目录后 reinstall 会自动补拉。
+      浏览器二进制在 ~/Library/Caches/camoufox,brew 安装沙箱不允许写该目录;缺失或损坏时手动补拉:
+        #{HOMEBREW_PREFIX}/opt/node/bin/node #{opt_libexec}/lib/node_modules/camofox-browser/node_modules/camoufox-js/dist/__main__.js fetch
     EOS
   end
 
