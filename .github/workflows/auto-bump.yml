@@ -630,10 +630,20 @@ jobs:
               echo "✅ PR 已创建: $pr_url"
               sleep 2
             fi
-            pr_head=$(gh pr view "$pr_url" --json headRefOid --jq '.headRefOid') || { echo "❌ $name: 无法读取 PR head"; return 1; }
+            pr_head=""
+            for attempt in 1 2 3 4 5; do
+              pr_head=$(gh pr view "$pr_url" --json headRefOid --jq '.headRefOid') || { echo "❌ $name: 无法读取 PR head"; return 1; }
+              [ "$pr_head" = "$expected_head" ] && break
+              [ "$attempt" -lt 5 ] && sleep 5
+            done
             if [ "$pr_head" != "$expected_head" ]; then
-              echo "❌ $name: PR head 与本轮推送不一致(期望 $expected_head,实际 $pr_head)"
-              return 1
+              remote_head=$(git ls-remote --heads origin "$branch" | awk 'NR == 1 { print $1 }') || { echo "❌ $name: 无法读取分支远端 head"; return 1; }
+              if [ "$remote_head" = "$expected_head" ]; then
+                echo "ℹ️  $name: PR head 接口暂未同步(期望 $expected_head,读到 $pr_head),分支远端 head 已核对一致,放行合并"
+              else
+                echo "❌ $name: PR head 与本轮推送不一致(期望 $expected_head,接口 $pr_head,远端分支 $remote_head)"
+                return 1
+              fi
             fi
             merge_pr "$pr_url" || { echo "❌ 自动合并未成功: $pr_url"; return 1; }
             echo "✅ PR 自动合并请求已处理"
