@@ -1,15 +1,15 @@
 cask "qoder-cn" do
   arch arm: "arm64", intel: "x64"
 
-  version "1.31.2"
+  version "1.32.0"
 
   on_arm do
-    sha256 "ad465116af5a07a0ceb07c4e5a525ace7763c54259ae6358d18d7743623fd8b9"
+    sha256 "a0f9a833b865137c40e8eace3c679ea959b6ff5143b0040202e538e331b87b62"
 
     url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-arm64.dmg"
   end
   on_intel do
-    sha256 "ea58238d6e55c7ca414c5ae099631d339236af545c5a84e83cefd3b8258c9eaf"
+    sha256 "5979d82b0134555f1b3babcf4d3314abee9e7a8c0218635c73ab4a500399cd6e"
 
     url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-x64.dmg"
   end
