@@ -1,15 +1,15 @@
 cask "qoderwake-cn" do
   arch arm: "arm64", intel: "amd64"
 
-  version "1.1.1-cn"
+  version "1.1.2-cn"
 
   on_arm do
-    sha256 "867b111c6e088b7255dca1a0cbfadaa4e3aa93074b42e6b36739030b9dc7e426"
+    sha256 "bbdec45c3814f82478319d71f154f40261dc6438f22b4af4deb58e61f5fd04d4"
 
     url "https://ide.qoder.com.cn/qoderwake-cn/installers/#{version}/qoderwake-cn_#{version}_darwin_arm64.dmg"
   end
   on_intel do
-    sha256 "36cbffd5c2f7a61c6f7dd69a2a383313f27ce10bb6bb14673f7fec81761801fb"
+    sha256 "c645d497706af348c457d8d23c06ff148e5d387540de9779eb9c58e46f5773b9"
 
     url "https://ide.qoder.com.cn/qoderwake-cn/installers/#{version}/qoderwake-cn_#{version}_darwin_amd64.dmg"
   end
