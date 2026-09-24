@@ -24,7 +24,7 @@ cask "wps-note" do
   end
 
   auto_updates true
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "WPS笔记.app"
 
