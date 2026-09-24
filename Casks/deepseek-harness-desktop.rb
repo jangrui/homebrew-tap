@@ -1,6 +1,6 @@
 cask "deepseek-harness-desktop" do
-  version "2.0.13"
-  sha256 "14dca10647c5f0ccf39433239134995998ab7b5d34aa179570b8fac0b8569363"
+  version "2.0.14"
+  sha256 "cb0efc674a823bb57c97e07cfd57adc3139fe1e1a9df6aad0609c2a97458b462"
 
   url "https://github.com/anywhere-labs/deepseek-harness-desktop/releases/download/v#{version}/DSH.Desktop-#{version}-universal.dmg"
   name "DSH Desktop"
