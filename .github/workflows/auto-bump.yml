@@ -637,8 +637,8 @@ jobs:
                 if main_contains_pr_head "$open_pr_url"; then
                   close_stale_pr "$open_pr_url" || { echo "❌ $name: 关闭状态残留 PR 失败"; return 1; }
                 else
-                  echo "❌ $name: OPEN PR 内容未完全落地主线: $open_pr_url"
-                  return 1
+                  echo "🧹 $name: 主线已是 $latest,OPEN PR 内容与主线不一致,按被取代关闭: $open_pr_url"
+                  close_stale_pr "$open_pr_url" "主线当前已是 ${latest}(与该 PR 分支内容不一致,该 PR 已被取代),自动清理。" || { echo "❌ $name: 关闭被取代 PR 失败"; return 1; }
                 fi
               fi
               echo "✅ $name 已是最新,无需更新"
