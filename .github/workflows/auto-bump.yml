@@ -67,6 +67,7 @@ jobs:
 
           close_stale_pr() {
             local pr_ref="$1" state head_ref
+            local reason="${2:-主线已包含该 PR 的全部文件内容,关闭状态残留的自动 bump PR。}"
             state=$(gh pr view "$pr_ref" --json state --jq '.state') || return 1
             case "$state" in
               OPEN|CLOSED|MERGED) ;;
@@ -74,7 +75,7 @@ jobs:
             esac
             head_ref=$(gh pr view "$pr_ref" --json headRefName --jq '.headRefName') || return 1
             if [ "$state" = "OPEN" ]; then
-              if ! gh pr close "$pr_ref" --comment "主线已包含该 PR 的全部文件内容,关闭状态残留的自动 bump PR。" >/dev/null; then
+              if ! gh pr close "$pr_ref" --comment "$reason" >/dev/null; then
                 state=$(gh pr view "$pr_ref" --json state --jq '.state' 2>/dev/null || true)
                 case "$state" in
                   CLOSED|MERGED) ;;
@@ -90,7 +91,7 @@ jobs:
           merge_pr() {
             local pr_ref="$1"
             local attempt output status verify
-            for attempt in 1 2 3; do
+            for attempt in 1 2 3 4 5; do
               status=$(read_pr_status "$pr_ref")
               if [[ "$status" == MERGED$'\t'* ]]; then
                 echo "✅ $pr_ref: PR 已合并"
@@ -121,11 +122,13 @@ jobs:
                 fi
               fi
               [ -n "${output:-}" ] && printf '%s\n' "$output"
-              if [ "$attempt" -lt 3 ]; then
+              if [ "$attempt" -lt 5 ]; then
                 echo "⚠️  $pr_ref: 自动合并命令失败,准备第 $((attempt + 1)) 次尝试"
-                sleep $((attempt * 5))
+                sleep $((attempt * 10))
               fi
             done
+            echo "⏳ $pr_ref: 重试耗尽,等待 60s 后做最终状态复核"
+            sleep 60
             status=$(read_pr_status "$pr_ref")
             if [[ "$status" == MERGED$'\t'* ]]; then
               echo "✅ $pr_ref: PR 已合并"
@@ -153,6 +156,61 @@ jobs:
             status=$(gh pr view "$pr_ref" --json state,mergeStateStatus,mergedAt,mergeCommit,autoMergeRequest --jq '[.state,.mergeStateStatus,(.mergedAt // ""),(.mergeCommit.oid // ""),(.autoMergeRequest != null)] | @tsv' 2>/dev/null || true)
             echo "❌ $pr_ref: 自动合并失败,PR 状态: ${status:-unknown}"
             return 1
+          }
+
+          sweep_superseded_prs() {
+            local pr_number head_name rest name ver ver_num seg main_version path newer listed
+            git fetch --quiet origin main || { echo "⚠️  孤儿 PR 清扫:无法 fetch origin/main"; return 1; }
+            listed=$(gh pr list --state open --json number,headRefName --jq '.[] | [.number,.headRefName] | @tsv') || { echo "⚠️  孤儿 PR 清扫:无法列出 OPEN PR"; return 1; }
+            while IFS=$'\t' read -r pr_number head_name; do
+              [ -z "$pr_number" ] && continue
+              case "$head_name" in bump-*) ;; *) continue ;; esac
+              rest="${head_name#bump-}"
+              name=""
+              ver=""
+              while [ -n "$rest" ]; do
+                if [[ "$rest" =~ ^v?[0-9][0-9A-Za-z.-]*$ ]]; then
+                  ver="$rest"
+                  break
+                fi
+                case "$rest" in
+                  *-*) seg="${rest%%-*}"; rest="${rest#*-}" ;;
+                  *) seg="$rest"; rest="" ;;
+                esac
+                name="${name:+${name}-}${seg}"
+              done
+              [ -n "$name" ] && [ -n "$ver" ] || continue
+              if git cat-file -e "origin/main:Casks/${name}.rb" 2>/dev/null; then
+                path="Casks/${name}.rb"
+              elif git cat-file -e "origin/main:Formula/${name}.rb" 2>/dev/null; then
+                path="Formula/${name}.rb"
+              else
+                continue
+              fi
+              ver_num="${ver#v}"
+              main_version=$(git show "origin/main:${path}" 2>/dev/null | grep -E '^ *version "' | head -1 | sed -E 's/.*"([^"]+)".*/\1/') || main_version=""
+              if [ -z "$main_version" ]; then
+                main_version=$(git show "origin/main:${path}" 2>/dev/null | ruby -e '
+                  STDIN.read.scan(/^\s*url "([^"]+)"/).flatten.each do |u|
+                    base = File.basename(u.split(/[#?]/).first.to_s).sub(/\.[A-Za-z0-9]+\z/, "")
+                    m = base.match(/(?:\A|[-_])v?(\d+(?:\.\d+)+)\z/)
+                    if m
+                      puts m[1]
+                      break
+                    end
+                  end
+                ') || main_version=""
+              fi
+              [ -z "$main_version" ] && continue
+              newer=$(printf '%s\n%s\n' "$main_version" "$ver_num" | sort -V | tail -1)
+              if [ "$newer" = "$ver_num" ] && [ "$main_version" != "$ver_num" ]; then
+                echo "ℹ️  #$pr_number($head_name)版本 $ver_num 领先主线 $main_version,保留"
+                continue
+              fi
+              echo "🧹 #$pr_number($head_name)版本 $ver_num 已被主线 $main_version 取代,关闭"
+              close_stale_pr "$pr_number" "该 PR 的版本 ${ver_num} 已被主线当前版本 ${main_version} 取代,自动清理孤儿 bump PR。" \
+                || echo "⚠️  #$pr_number 关闭失败,下轮 run 清扫会再次尝试"
+            done <<< "$listed"
           }
 
           apply_electron_builder_bump() {
@@ -606,13 +664,23 @@ jobs:
             else
               echo "🚀 $name: $current → $latest,开始 bump"
               style_flag="--no-style"; [ "$kind" = "formula" ] && style_flag=""
-              brew "$bump_cmd" "$name" \
-                --version="$latest" \
-                --message="auto-bump: $current → $latest" \
-                --no-audit \
-                $style_flag \
-                --write-only \
-                --commit || { echo "⚠️  $bump_cmd --write-only 失败,见上方日志"; return 1; }
+              local dl_attempt bump_ok=""
+              for dl_attempt in 1 2 3; do
+                if brew "$bump_cmd" "$name" \
+                  --version="$latest" \
+                  --message="auto-bump: $current → $latest" \
+                  --no-audit \
+                  $style_flag \
+                  --write-only \
+                  --commit; then
+                  bump_ok=1
+                  break
+                fi
+                echo "⚠️  $bump_cmd --write-only 失败(第 $dl_attempt/3 次),见上方日志"
+                sync_main || { echo "❌ $name: 重试前无法重置 main"; return 1; }
+                [ "$dl_attempt" -lt 3 ] && sleep $((dl_attempt * 30))
+              done
+              [ -n "$bump_ok" ] || { echo "❌ $name: $bump_cmd 重试 3 次仍失败"; return 1; }
 
               git checkout -B "$branch" || { echo "❌ $name: 无法创建 bump 分支"; return 1; }
               push_branch "$branch" || { echo "❌ $name: 无法推送 bump 分支"; return 1; }
@@ -674,6 +742,8 @@ jobs:
             bump_one formula "$(basename "$f" .rb)" || errors=$((errors+1))
           done
 
+          sweep_superseded_prs || errors=$((errors+1))
+
           echo "============================================"
           if [ "$errors" -gt 0 ]; then
             echo "❌ 完成,但有 $errors 个包 bump 失败(见上方 ⚠️ 日志)"
@@ -700,5 +770,7 @@ jobs:
             echo "今日告警 issue 已存在,跳过: $title"
             exit 0
           fi
-          gh issue create -R "$REPO" --title "$title" --body "auto-bump 运行失败,详见: ${RUN_URL}" >/dev/null
+          utc_date=$(TZ=UTC date +%Y-%m-%d)
+          gh issue create -R "$REPO" --title "$title" --body "失败 run 的 UTC 日期:${utc_date}(标题日期为北京时间)。
+          auto-bump 运行失败,详见: ${RUN_URL}" >/dev/null
           echo "已开告警 issue: $title"
