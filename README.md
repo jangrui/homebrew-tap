@@ -37,6 +37,7 @@ brew uninstall <name>
 | [mouser](./Casks/mouser.rb) | Logitech Options+ 开源替代品,HID++ 鼠标按键重映射 + 按应用配置 | [TomBadash/Mouser](https://github.com/TomBadash/Mouser) |
 | [omlx](./Casks/omlx.rb) | oMLX,Apple Silicon 本地 LLM 推理服务器(连续批处理 + SSD 分层 KV 缓存,菜单栏管理),仅 arm64 | [jundot/omlx](https://github.com/jundot/omlx) |
 | [omniroute-app](./Casks/omniroute-app.rb) | OmniRoute 桌面端(Electron),统一 AI 网关,聚合 160+ 提供商的浏览器仪表盘 | [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) |
+| [opencodex-app](./Casks/opencodex-app.rb) | OpenCodex 桌面端(Tauri),本地 provider 代理与仪表盘的原生窗口版,带托盘和内置 ocx,universal | [lidge-jun/opencodex](https://github.com/lidge-jun/opencodex) |
 | [openchatcut](./Casks/openchatcut.rb) | 本地优先的对话式 AI 视频编辑器,多轨时间线 + 自然语言剪辑 | [0xsline/OpenChatCut](https://github.com/0xsline/OpenChatCut) |
 | [codexsplit](./Casks/codexsplit.rb) | CodexSplit(Codex Desktop)本地 AI 工作台,网关、语音、会话管理、第三方模型与 Agent 工具,仅 arm64 | [AITabby/opencodex](https://github.com/AITabby/opencodex) |
 | [opensquilla](./Casks/opensquilla.rb) | OpenSquilla 桌面端,Token 高效的本地 AI Agent(SquillaRouter 模型路由 + 多工具 + 本地记忆),仅 arm64 | [opensquilla/opensquilla](https://github.com/opensquilla/opensquilla) |
