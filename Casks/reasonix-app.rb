@@ -1,6 +1,6 @@
 cask "reasonix-app" do
-  version "1.39.7"
-  sha256 "c16a1441232791d4dda00b35f8677764b487c9e401783cc187336965bf0238b4"
+  version "1.39.8"
+  sha256 "66268ebb84f45a3130711b581f76938d9268e0d27336859dc77d40bbe5391239"
 
   url "https://github.com/esengine/DeepSeek-Reasonix/releases/download/desktop-v#{version}/Reasonix-darwin-universal.dmg"
   name "Reasonix Desktop"
