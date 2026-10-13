@@ -1,41 +1,44 @@
 cask "qoder-cn" do
   arch arm: "arm64", intel: "x64"
 
-  version "1.32.0"
+  version "0.4.4"
 
   on_arm do
-    sha256 "a0f9a833b865137c40e8eace3c679ea959b6ff5143b0040202e538e331b87b62"
+    sha256 "7dc2e7ce482edfd933f0e70a3a478209e0d6c058cf1652f613009088223bc4d7"
 
-    url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-arm64.dmg"
+    url "https://static.qoder.com.cn/qoder-app/releases/#{version}/Qoder-CN-mac-arm64.zip"
   end
   on_intel do
-    sha256 "5979d82b0134555f1b3babcf4d3314abee9e7a8c0218635c73ab4a500399cd6e"
+    sha256 "3c723f530998dcd1f99e92a71702c6afcc2323ea891290a9fc8d830ac1f1bf09"
 
-    url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-x64.dmg"
+    url "https://static.qoder.com.cn/qoder-app/releases/#{version}/Qoder-CN-mac-x64.zip"
   end
 
   name "Qoder CN"
-  desc "为真实软件开发打造的智能体自主开发工作台"
-  homepage "https://qoder.com.cn/"
+  desc "阿里云以编程智能体为核心的智能体工作空间"
+  homepage "https://qoder.cn/"
 
   livecheck do
-    url "https://docs.qoder.cn/product-overview/qoder-cn-ide-update-log.md"
-    strategy :page_match
-    regex(/\A.*?v?(\d+(?:\.\d+)+)/im)
+    url "https://static.qoder.com.cn/qoder-app/releases/latest-mac.yml"
+    strategy :electron_builder
   end
 
   auto_updates true
   depends_on macos: :monterey
 
-  app "Qoder CN IDE.app"
+  app "Qoder CN.app"
 
-  uninstall quit: "com.aliyun.lingma.ide"
+  uninstall quit: "com.qodercn.app"
 
   zap trash: [
-    "~/Library/Application Support/Qoder CN",
-    "~/Library/Caches/com.aliyun.lingma.ide",
-    "~/Library/Caches/com.aliyun.lingma.ide.ShipIt",
-    "~/Library/HTTPStorages/com.aliyun.lingma.ide",
-    "~/Library/Preferences/com.aliyun.lingma.ide.plist",
+    "~/Library/Application Support/com.qodercn.app.stable",
+    "~/Library/Application Support/QoderCN",
+    "~/Library/Caches/com.qodercn.app",
+    "~/Library/Caches/com.qodercn.app.ShipIt",
+    "~/Library/Caches/qoder-cn-updater",
+    "~/Library/HTTPStorages/com.qodercn.app",
+    "~/Library/Preferences/com.qodercn.app.plist",
+    "~/Library/Saved Application State/com.qodercn.app.savedState",
+    "~/Library/WebKit/com.qodercn.app",
   ]
 end

@@ -42,8 +42,9 @@ brew uninstall <name>
 | [codexsplit](./Casks/codexsplit.rb) | CodexSplit(Codex Desktop)本地 AI 工作台,网关、语音、会话管理、第三方模型与 Agent 工具,仅 arm64 | [AITabby/opencodex](https://github.com/AITabby/opencodex) |
 | [opensquilla](./Casks/opensquilla.rb) | OpenSquilla 桌面端,Token 高效的本地 AI Agent(SquillaRouter 模型路由 + 多工具 + 本地记忆),仅 arm64 | [opensquilla/opensquilla](https://github.com/opensquilla/opensquilla) |
 | [pi-agent](./Casks/pi-agent.rb) | Pi Agent 桌面端(pi coding agent),Claude Code 式 AI 编码代理,免环境配置与终端命令,仅 arm64 | [abcwyc/pi-agent-desktop](https://github.com/abcwyc/pi-agent-desktop) |
-| [qoder-cn](./Casks/qoder-cn.rb) | 阿里 Qoder CN IDE,为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
-| [qoderwork-cn](./Casks/qoderwork-cn.rb) | QoderWork CN,本地运行、自主规划、安全可控的 AI 工作搭子 | [qoder.com.cn](https://qoder.com.cn/) |
+| [qoder-cn](./Casks/qoder-cn.rb) | 阿里云全新 Qoder CN,以编程智能体为核心的智能体工作空间 | [qoder.cn](https://qoder.cn/) |
+| [qoder-cn-ide](./Casks/qoder-cn-ide.rb) | Qoder CN IDE(原通义灵码),为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
+| [qoderwork-cn](./Casks/qoderwork-cn.rb) | QoderWork CN,本地运行、自主规划、安全可控的 AI 工作搭子(上游已停更,新用户建议 qoder-cn) | [qoder.com.cn](https://qoder.com.cn/) |
 | [qoderwake-cn](./Casks/qoderwake-cn.rb) | QoderWake CN,全天在线的数字员工 | [qoder.com.cn](https://qoder.com.cn/) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
 | [reasonix-app](./Casks/reasonix-app.rb) | Reasonix Desktop,DeepSeek 原生 AI coding agent 桌面端(prefix-cache 稳定性设计) | [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) |
