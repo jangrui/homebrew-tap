@@ -24,7 +24,7 @@ cask "kite" do
 
   postflight_steps do
     run "/usr/bin/xattr",
-        args: ["-rd", "com.apple.quarantine", "{{appdir}}/Kite.app"]
+        args: ["-rsd", "com.apple.quarantine", "{{appdir}}/Kite.app"]
   end
 
   zap trash: [

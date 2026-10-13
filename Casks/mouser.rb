@@ -27,7 +27,7 @@ cask "mouser" do
 
   postflight_steps do
     run "/usr/bin/xattr",
-        args: ["-rd", "com.apple.quarantine", "{{appdir}}/Mouser.app"]
+        args: ["-rsd", "com.apple.quarantine", "{{appdir}}/Mouser.app"]
   end
 
   zap trash: "~/Library/Application Support/Mouser"

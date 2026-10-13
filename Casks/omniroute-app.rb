@@ -21,13 +21,13 @@ cask "omniroute-app" do
     strategy :github_releases
   end
 
-  depends_on macos: :monterey
+  depends_on macos: :ventura
 
   app "OmniRoute.app"
 
   postflight_steps do
     run "/usr/bin/xattr",
-        args: ["-rd", "com.apple.quarantine", "{{appdir}}/OmniRoute.app"]
+        args: ["-rsd", "com.apple.quarantine", "{{appdir}}/OmniRoute.app"]
   end
 
   zap trash: [

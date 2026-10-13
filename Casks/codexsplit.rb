@@ -19,7 +19,7 @@ cask "codexsplit" do
 
   postflight_steps do
     run "/usr/bin/xattr",
-        args: ["-rd", "com.apple.quarantine", "{{appdir}}/CodexSplit.app"]
+        args: ["-rsd", "com.apple.quarantine", "{{appdir}}/CodexSplit.app"]
   end
 
   zap trash: [

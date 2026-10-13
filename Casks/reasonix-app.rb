@@ -19,7 +19,7 @@ cask "reasonix-app" do
 
   postflight_steps do
     run "/usr/bin/xattr",
-        args: ["-rd", "com.apple.quarantine", "{{appdir}}/Reasonix.app"]
+        args: ["-rsd", "com.apple.quarantine", "{{appdir}}/Reasonix.app"]
   end
 
   zap trash: [
