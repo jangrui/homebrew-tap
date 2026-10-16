@@ -1,13 +1,13 @@
 cask "easycliproxyapi" do
-  version "0.3.38"
+  version "0.3.41"
 
   on_arm do
-    sha256 "069b2f3822ffa33171f11f40bbf77f7ca7163ceee33985d5f9602f0fe3a7042c"
+    sha256 "11bfcdd3c0f788b9f8710675e88cadb847bccbb6eec4c2b874ffd2a1aaf3eb3e"
 
     url "https://github.com/router-for-me/EasyCLIProxyAPI/releases/download/v#{version}/EasyCLIProxyAPI-v#{version}-Darwin-aarch64.dmg"
   end
   on_intel do
-    sha256 "1056686d7bd2cf5cce195f55209c248023979188687d773e8ce972608ef8c848"
+    sha256 "99dd19ed5d3dd9b06fb2cc141692b263fdfab9687c2cced1f4ebf2775b9f5781"
 
     url "https://github.com/router-for-me/EasyCLIProxyAPI/releases/download/v#{version}/EasyCLIProxyAPI-v#{version}-Darwin-amd64.dmg"
   end
