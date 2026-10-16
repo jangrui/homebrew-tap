@@ -41,6 +41,7 @@ brew uninstall <name>
 | [openchatcut](./Casks/openchatcut.rb) | 本地优先的对话式 AI 视频编辑器,多轨时间线 + 自然语言剪辑 | [0xsline/OpenChatCut](https://github.com/0xsline/OpenChatCut) |
 | [codexsplit](./Casks/codexsplit.rb) | CodexSplit(Codex Desktop)本地 AI 工作台,网关、语音、会话管理、第三方模型与 Agent 工具,仅 arm64 | [AITabby/opencodex](https://github.com/AITabby/opencodex) |
 | [opensquilla](./Casks/opensquilla.rb) | OpenSquilla 桌面端,Token 高效的本地 AI Agent(SquillaRouter 模型路由 + 多工具 + 本地记忆),仅 arm64 | [opensquilla/opensquilla](https://github.com/opensquilla/opensquilla) |
+| [oss-browser](./Casks/oss-browser.rb) | 阿里云 OSS 图形化管理工具(Electron,仅 x64、Apple Silicon 走 Rosetta;未签名,官方 cask 已禁用后的自维护) | [aliyun/oss-browser](https://github.com/aliyun/oss-browser) |
 | [pi-agent](./Casks/pi-agent.rb) | Pi Agent 桌面端(pi coding agent),Claude Code 式 AI 编码代理,免环境配置与终端命令,仅 arm64 | [abcwyc/pi-agent-desktop](https://github.com/abcwyc/pi-agent-desktop) |
 | [qoder](./Casks/qoder.rb) | 阿里 Qoder 国际版,以编程智能体为核心的智能体工作空间(qoder-cn 的海外版) | [qoder.com](https://qoder.com/) |
 | [qoder-cn](./Casks/qoder-cn.rb) | 阿里云全新 Qoder CN,以编程智能体为核心的智能体工作空间 | [qoder.cn](https://qoder.cn/) |
