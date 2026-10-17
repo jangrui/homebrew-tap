@@ -9,6 +9,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: auto-bump
+  cancel-in-progress: false
+
 jobs:
   bump:
     runs-on: ubuntu-latest
