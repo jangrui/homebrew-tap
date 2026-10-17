@@ -5,7 +5,7 @@ cask "opencodex-app" do
   url "https://github.com/lidge-jun/opencodex/releases/download/v#{version}/OpenCodex-#{version}-macos.dmg"
   name "OpenCodex"
   desc "OpenCodex 桌面端,本地 provider 代理与仪表盘的原生窗口版(Tauri),带托盘和内置 ocx"
-  homepage "https://github.com/lidge-jun/opencodex"
+  homepage "https://opencodex.me/"
 
   livecheck do
     url :url

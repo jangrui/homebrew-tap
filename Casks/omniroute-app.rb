@@ -14,7 +14,7 @@ cask "omniroute-app" do
 
   name "OmniRoute"
   desc "OmniRoute 桌面端,统一 AI 网关(Electron),聚合 160+ 提供商的浏览器仪表盘"
-  homepage "https://github.com/diegosouzapw/OmniRoute"
+  homepage "https://www.omniroute.online/"
 
   livecheck do
     url :url

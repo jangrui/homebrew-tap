@@ -2,7 +2,7 @@ cask "kite" do
   version "0.1.20"
 
   desc "基于 Wails v3 的 K8S 多集群管理桌面工具"
-  homepage "https://github.com/eryajf/kite-desktop"
+  homepage "https://kite-desktop.eryajf.net/"
 
   on_arm do
     sha256 "cc5264ba0c438dc258e5b4410fea38fe4c9b85448476c07581f6602fad9297a1"

@@ -14,7 +14,7 @@ cask "openchatcut" do
 
   name "OpenChatCut"
   desc "本地优先的对话式 AI 视频编辑器,多轨时间线 + LLM 自然语言剪辑"
-  homepage "https://github.com/0xsline/OpenChatCut"
+  homepage "https://openchatcut.com/"
 
   livecheck do
     url :url

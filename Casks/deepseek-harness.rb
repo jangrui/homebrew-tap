@@ -14,7 +14,7 @@ cask "deepseek-harness" do
 
   name "DeepSeek Harness"
   desc "DeepSeek 官方 AI Agent 桌面工作台(Harness)"
-  homepage "https://github.com/deepseek-ai/deepseek-harness"
+  homepage "https://deepseek.com/harness"
 
   livecheck do
     url "https://github.com/deepseek-ai/deepseek-harness"

@@ -5,7 +5,7 @@ cask "pi-agent" do
   url "https://github.com/abcwyc/pi-agent-desktop/releases/download/v#{version}/Pi.Agent_#{version}_aarch64.dmg"
   name "Pi Agent"
   desc "跨平台 AI 编码 Agent 桌面客户端,免环境配置、免终端命令,开箱即用"
-  homepage "https://github.com/abcwyc/pi-agent-desktop"
+  homepage "https://pi.348580.xyz/"
 
   livecheck do
     url :url
