@@ -1,24 +1,20 @@
 cask "kite" do
-  version "0.1.20"
+  arch arm: "apple-silicon", intel: "intel"
 
+  version "0.1.20"
+  sha256 arm:   "cc5264ba0c438dc258e5b4410fea38fe4c9b85448476c07581f6602fad9297a1",
+         intel: "8aa56fb58146403a9e1bea4758ce478a8076ffb4402df9e7808caca941632861"
+
+  url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-#{arch}.dmg"
   desc "基于 Wails v3 的 K8S 多集群管理桌面工具"
   homepage "https://kite-desktop.eryajf.net/"
-
-  on_arm do
-    sha256 "cc5264ba0c438dc258e5b4410fea38fe4c9b85448476c07581f6602fad9297a1"
-    url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-apple-silicon.dmg"
-  end
-  on_intel do
-    sha256 "8aa56fb58146403a9e1bea4758ce478a8076ffb4402df9e7808caca941632861"
-    url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-intel.dmg"
-  end
-
-  depends_on macos: :big_sur
 
   livecheck do
     url :url
     strategy :github_releases
   end
+
+  depends_on :macos
 
   app "Kite.app"
 
@@ -31,7 +27,7 @@ cask "kite" do
     "~/Library/Application Support/com.eryajf.kite",
     "~/Library/Caches/com.eryajf.kite",
     "~/Library/Preferences/com.eryajf.kite.plist",
-    "~/Library/SDKs/kite-sdk",
     "~/Library/Saved Application State/com.eryajf.kite.savedState",
+    "~/Library/SDKs/kite-sdk",
   ]
 end

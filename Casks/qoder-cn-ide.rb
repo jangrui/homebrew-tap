@@ -2,18 +2,10 @@ cask "qoder-cn-ide" do
   arch arm: "arm64", intel: "x64"
 
   version "1.34.0"
+  sha256 arm:   "3d036062ce392eac48c48a1c539a31f8188cf44abcac94e616575fdb9b9546ce",
+         intel: "7bcbaf96af7db132bde9396174c17a1162a2726ebda19bd66c9e26bada46421d"
 
-  on_arm do
-    sha256 "3d036062ce392eac48c48a1c539a31f8188cf44abcac94e616575fdb9b9546ce"
-
-    url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-arm64.dmg"
-  end
-  on_intel do
-    sha256 "7bcbaf96af7db132bde9396174c17a1162a2726ebda19bd66c9e26bada46421d"
-
-    url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-x64.dmg"
-  end
-
+  url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-#{arch}.dmg"
   name "Qoder CN IDE"
   desc "为真实软件开发打造的智能体自主开发工作台"
   homepage "https://qoder.com.cn/"

@@ -2,18 +2,10 @@ cask "qoder-cn" do
   arch arm: "arm64", intel: "x64"
 
   version "0.4.8"
+  sha256 arm:   "b5eafbc435dc7b414c0b3099c40739f35bb0f9f973f062f401d199cf40fa4a05",
+         intel: "cd9710c4bfa7f2b96282da270363ba52dc9a7fdc012cf34ded726413c40e507e"
 
-  on_arm do
-    sha256 "b5eafbc435dc7b414c0b3099c40739f35bb0f9f973f062f401d199cf40fa4a05"
-
-    url "https://static.qoder.com.cn/qoder-app/releases/#{version}/Qoder-CN-mac-arm64.zip"
-  end
-  on_intel do
-    sha256 "cd9710c4bfa7f2b96282da270363ba52dc9a7fdc012cf34ded726413c40e507e"
-
-    url "https://static.qoder.com.cn/qoder-app/releases/#{version}/Qoder-CN-mac-x64.zip"
-  end
-
+  url "https://static.qoder.com.cn/qoder-app/releases/#{version}/Qoder-CN-mac-#{arch}.zip"
   name "Qoder CN"
   desc "阿里云以编程智能体为核心的智能体工作空间"
   homepage "https://qoder.cn/"

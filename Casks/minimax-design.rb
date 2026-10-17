@@ -1,17 +1,11 @@
 cask "minimax-design" do
+  arch arm: "arm64", intel: "x64"
+
   version "4.0.1"
+  sha256 arm:   "e647ac9cf0e7588289021ab757fb764f9a8062d8133249c1b949cac250695a6e",
+         intel: "cedc19f7534986cf62f22849c11c52668b94f4768c552889cb038034b9164504"
 
-  on_arm do
-    sha256 "e647ac9cf0e7588289021ab757fb764f9a8062d8133249c1b949cac250695a6e"
-
-    url "https://filecdn.minimax.chat/public/minimax-hub/release/domestic/MiniMax%20Design-#{version}-arm64.dmg"
-  end
-  on_intel do
-    sha256 "cedc19f7534986cf62f22849c11c52668b94f4768c552889cb038034b9164504"
-
-    url "https://filecdn.minimax.chat/public/minimax-hub/release/domestic/MiniMax%20Design-#{version}-x64.dmg"
-  end
-
+  url "https://filecdn.minimax.chat/public/minimax-hub/release/domestic/MiniMax%20Design-#{version}-#{arch}.dmg"
   name "MiniMax Design"
   desc "MiniMax AI Agent 创作平台,覆盖调研、脚本、图像、视频、配音的完整内容生产链路"
   homepage "https://design.minimaxi.com/"

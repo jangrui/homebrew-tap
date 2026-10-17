@@ -2,18 +2,10 @@ cask "workbuddy" do
   arch arm: "arm64", intel: "x64"
 
   version "5.8.3.41334564-db0e9b51"
+  sha256 arm:   "ecd404f16f9e9f97ada77cf8211202ceb1ecd0a86ebffe1782dfea0ac7eae626",
+         intel: "be38d473d41d3aed0958c80170213c90e6dba6404668849e4f7d0fda74b24f6e"
 
-  on_arm do
-    sha256 "ecd404f16f9e9f97ada77cf8211202ceb1ecd0a86ebffe1782dfea0ac7eae626"
-
-    url "https://download.codebuddy.cn/workbuddy/saas/darwin-arm64/WorkBuddy-darwin-arm64-#{version}.dmg"
-  end
-  on_intel do
-    sha256 "be38d473d41d3aed0958c80170213c90e6dba6404668849e4f7d0fda74b24f6e"
-
-    url "https://download.codebuddy.cn/workbuddy/saas/darwin-x64/WorkBuddy-darwin-x64-#{version}.dmg"
-  end
-
+  url "https://download.codebuddy.cn/workbuddy/saas/darwin-#{arch}/WorkBuddy-darwin-#{arch}-#{version}.dmg"
   name "WorkBuddy"
   desc "腾讯出品的全场景 AI 办公工作台(自然语言下任务、多 Agent 执行、交付文档/PPT,打通腾讯文档/会议/邮箱生态)"
   homepage "https://www.workbuddy.cn/"
@@ -25,7 +17,7 @@ cask "workbuddy" do
     end
   end
 
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "WorkBuddy.app"
 

@@ -1,17 +1,11 @@
 cask "deepseek-harness" do
+  arch arm: "arm64", intel: "x64"
+
   version "0.2.0-rc.2"
+  sha256 arm:   "7c32c459c403d8a035ac60600f240ed2025312f0a7afde283f454f30ec4ed96e",
+         intel: "144fe463d56a2e62025c28d2f1d31dea2a838c5f35013c1f1ad1c1d42428335a"
 
-  on_arm do
-    sha256 "7c32c459c403d8a035ac60600f240ed2025312f0a7afde283f454f30ec4ed96e"
-
-    url "https://download.deepseek.com/dsh-desk/bin/mac-arm64/deepseek-harness-#{version}-mac-arm64.dmg"
-  end
-  on_intel do
-    sha256 "144fe463d56a2e62025c28d2f1d31dea2a838c5f35013c1f1ad1c1d42428335a"
-
-    url "https://download.deepseek.com/dsh-desk/bin/mac-x64/deepseek-harness-#{version}-mac-x64.dmg"
-  end
-
+  url "https://download.deepseek.com/dsh-desk/bin/mac-#{arch}/deepseek-harness-#{version}-mac-#{arch}.dmg"
   name "DeepSeek Harness"
   desc "DeepSeek 官方 AI Agent 桌面工作台(Harness)"
   homepage "https://deepseek.com/harness"

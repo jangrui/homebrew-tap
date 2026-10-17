@@ -4,13 +4,7 @@ cask "qoderwork-cn" do
   version :latest
   sha256 :no_check
 
-  on_arm do
-    url "https://static.qoder.com.cn/qoder-work-cn/releases/latest/QoderWorkCN-arm64.dmg"
-  end
-  on_intel do
-    url "https://static.qoder.com.cn/qoder-work-cn/releases/latest/QoderWorkCN-x64.dmg"
-  end
-
+  url "https://static.qoder.com.cn/qoder-work-cn/releases/latest/QoderWorkCN-#{arch}.dmg"
   name "QoderWork CN"
   desc "本地运行、自主规划、安全可控的 AI 工作搭子"
   homepage "https://qoder.com.cn/"
@@ -19,7 +13,7 @@ cask "qoderwork-cn" do
     skip "Upstream only publishes a latest/ URL"
   end
 
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "QoderWork CN.app"
 

@@ -1,17 +1,11 @@
 cask "trae-work" do
+  arch arm: "arm64", intel: "x64"
+
   version "2.3.91090"
+  sha256 arm:   "31d0b55fa25d21d39712a807a76a3b59ec442f44ac406f6069730f51ac4c3b3c",
+         intel: "ffa396718f0d38e04ce0f0109b49c00e042bf807373c86bfbdf7cabd69c552d8"
 
-  on_arm do
-    sha256 "31d0b55fa25d21d39712a807a76a3b59ec442f44ac406f6069730f51ac4c3b3c"
-
-    url "https://lf-cdn.trae.ai/obj/trae-ai-us/pkg/app/releases/stable/#{version}/darwin/TraeWork-darwin-arm64.dmg"
-  end
-  on_intel do
-    sha256 "ffa396718f0d38e04ce0f0109b49c00e042bf807373c86bfbdf7cabd69c552d8"
-
-    url "https://lf-cdn.trae.ai/obj/trae-ai-us/pkg/app/releases/stable/#{version}/darwin/TraeWork-darwin-x64.dmg"
-  end
-
+  url "https://lf-cdn.trae.ai/obj/trae-ai-us/pkg/app/releases/stable/#{version}/darwin/TraeWork-darwin-#{arch}.dmg"
   name "TRAE Work"
   desc "ByteDance AI agent 桌面端(work/code/design 三模式,Web/Desktop/Mobile 跨端)"
   homepage "https://www.trae.ai/"

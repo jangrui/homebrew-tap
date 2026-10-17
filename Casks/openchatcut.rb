@@ -1,17 +1,11 @@
 cask "openchatcut" do
+  arch arm: "arm64", intel: "x64"
+
   version "0.2.17"
+  sha256 arm:   "ffd89646dc7a8c60cc799178a13130d3b02feb6d9ed3de7749b23fe48ff39802",
+         intel: "38aa1103a4b8c4b150bd354f892b9db0b8330cad7d26b6a4e75928b0d6f62674"
 
-  on_arm do
-    sha256 "ffd89646dc7a8c60cc799178a13130d3b02feb6d9ed3de7749b23fe48ff39802"
-
-    url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-arm64.dmg"
-  end
-  on_intel do
-    sha256 "38aa1103a4b8c4b150bd354f892b9db0b8330cad7d26b6a4e75928b0d6f62674"
-
-    url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-x64.dmg"
-  end
-
+  url "https://github.com/0xsline/OpenChatCut/releases/download/v#{version}/OpenChatCut-#{version}-#{arch}.dmg"
   name "OpenChatCut"
   desc "本地优先的对话式 AI 视频编辑器,多轨时间线 + LLM 自然语言剪辑"
   homepage "https://openchatcut.com/"
