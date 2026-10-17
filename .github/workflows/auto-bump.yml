@@ -217,6 +217,25 @@ jobs:
             done <<< "$listed"
           }
 
+          sweep_bump_branches() {
+            local heads open_heads b deleted=0 failed=0
+            heads=$(git ls-remote --heads origin 'refs/heads/bump-*' | sed 's|.*refs/heads/||') || { echo "⚠️  分支清扫:无法列出远程 bump 分支"; return 1; }
+            [ -z "$heads" ] && return 0
+            open_heads=$(gh pr list --state open --json headRefName --jq '.[].headRefName') || { echo "⚠️  分支清扫:无法列出 OPEN PR"; return 1; }
+            while IFS= read -r b; do
+              [ -z "$b" ] && continue
+              printf '%s\n' "$open_heads" | grep -qx "$b" && continue
+              if gh api --method DELETE "repos/${repo_name}/git/refs/heads/${b}" >/dev/null 2>&1; then
+                deleted=$((deleted+1))
+              else
+                failed=$((failed+1))
+              fi
+            done <<< "$heads"
+            [ "$deleted" -gt 0 ] && echo "🧹 分支清扫:删除 $deleted 条无 OPEN PR 的 bump 分支"
+            [ "$failed" -gt 0 ] && echo "⚠️  分支清扫:$failed 条分支删除失败(下轮 run 重试)"
+            return 0
+          }
+
           apply_electron_builder_bump() {
             local name="$1" latest="$2"
             local cask_path="Casks/${name}.rb"
@@ -747,6 +766,7 @@ jobs:
           done
 
           sweep_superseded_prs || errors=$((errors+1))
+          sweep_bump_branches || errors=$((errors+1))
 
           echo "============================================"
           if [ "$errors" -gt 0 ]; then
