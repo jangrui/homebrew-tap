@@ -1,6 +1,6 @@
 cask "minimax-code" do
-  version "3.1.3"
-  sha256 "14a845a194603d7e7902c3ded7250e07f8ec049f645b503f176189bb8c08600a"
+  version "3.1.4"
+  sha256 "9e51c691261919deb83260d9b84199b2e0cab2fa4b984dd75bd964cd00de1ed3"
 
   url "https://filecdn.minimax.chat/public/minimax-agent-prod/release/MiniMax%20Code-#{version}-arm64.dmg"
   name "MiniMax Code"
