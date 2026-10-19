@@ -1,8 +1,8 @@
 class Omniroute < Formula
   desc "统一 AI 网关,聚合 160+ 提供商到单一 OpenAI 兼容端点(自动回退 + Token 压缩 + MCP/A2A)"
   homepage "https://github.com/diegosouzapw/OmniRoute"
-  url "https://registry.npmjs.org/omniroute/-/omniroute-3.8.51.tgz"
-  sha256 "421699fdda34bd85bcf035257e88e359edc033c01b85d54b6a4921c1cda4d2ef"
+  url "https://registry.npmjs.org/omniroute/-/omniroute-3.8.52.tgz"
+  sha256 "4fb570f7db3099fc1cc01d16f4e37c0c1a1cb43049ff3e85fbfbfa86c66b86a7"
   license "MIT"
 
   livecheck do
