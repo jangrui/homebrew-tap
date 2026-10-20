@@ -1,13 +1,13 @@
 cask "omniroute-app" do
-  version "3.8.51"
+  version "3.8.52"
 
   on_arm do
-    sha256 "b539afe6359e6fcb772cd3b735e4671ac2818524a7a525251bc8eb64d043c4a9"
+    sha256 "d56ca0fc0422fefaf85313d0ec1c14d79412a5480d93debe56468bb2947fd81b"
 
     url "https://github.com/diegosouzapw/OmniRoute/releases/download/v#{version}/OmniRoute-#{version}-arm64.dmg"
   end
   on_intel do
-    sha256 "15484ce1f055f9faede5d53994db718ed0ed7712ac9d84c5e3c55df5e580fe36"
+    sha256 "354f12c1f268bd9f309acbe1d49ebf5929be19e060e74b975d36304d8699dd5c"
 
     url "https://github.com/diegosouzapw/OmniRoute/releases/download/v#{version}/OmniRoute-#{version}.dmg"
   end
