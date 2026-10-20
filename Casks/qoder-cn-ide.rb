@@ -1,9 +1,9 @@
 cask "qoder-cn-ide" do
   arch arm: "arm64", intel: "x64"
 
-  version "1.34.0"
-  sha256 arm:   "3d036062ce392eac48c48a1c539a31f8188cf44abcac94e616575fdb9b9546ce",
-         intel: "7bcbaf96af7db132bde9396174c17a1162a2726ebda19bd66c9e26bada46421d"
+  version "1.35.0"
+  sha256 arm:   "bdd4d481a61a7c0e0e5b67f2e6e06931ab20908ac69c38d8db9f527d5ecfee82",
+         intel: "5b670dc827ceaad0457b4b68fe4a7439cfc5541b56e7f738a182ca90aae26430"
 
   url "https://ide.qoder.com.cn/qoder/release/#{version}/Qoder-CN-IDE-darwin-#{arch}.dmg"
   name "Qoder CN IDE"
