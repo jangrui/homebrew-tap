@@ -1,8 +1,8 @@
 class Opencodex < Formula
   desc "OpenAI Codex 与 Claude Code 的通用 provider 代理,接入任意 LLM"
   homepage "https://github.com/lidge-jun/opencodex"
-  url "https://registry.npmjs.org/@bitkyc08/opencodex/-/opencodex-2.90.0.tgz"
-  sha256 "8e93121ed582312e14cfec3fd40eb9ed4694bf209dfbdf417e627fcc228e242f"
+  url "https://registry.npmjs.org/@bitkyc08/opencodex/-/opencodex-2.91.0.tgz"
+  sha256 "3765a34c8c3949a66dafc29234d5fd84b50cfac05027508222400142eb144343"
   license "MIT"
 
   livecheck do
