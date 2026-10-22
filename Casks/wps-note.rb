@@ -1,9 +1,9 @@
 cask "wps-note" do
   arch arm: "arm64", intel: "x64"
 
-  version "1.20.0"
-  sha256 arm:   "09355c1b6ebd295cd5259c4cdb931fd1d45f0d3a39fe80fccf66748d514eb7df",
-         intel: "5364357fdc194f22bbd61c595710153f5089a9d4a58c8a4c27dcc8f95415e2a8"
+  version "1.22.0"
+  sha256 arm:   "eaa82e0546f4493688562ffc0b10a40b263493d15be21370880d57939cdc2c06",
+         intel: "a087db0b24bfd59778e1089519a22118321b8c1f4222cb960dafbca5db157e9f"
 
   url "https://ainote.wpscdn.cn/downloads/mac/v#{version}/WPS%E7%AC%94%E8%AE%B0-#{version}-#{arch}.dmg"
   name "WPS笔记"
