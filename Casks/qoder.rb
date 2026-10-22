@@ -1,9 +1,9 @@
 cask "qoder" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.4.8"
-  sha256 arm:   "e388a9831ac5a77af9ba6a2ad5cb3b5c11065c7f06a1fd18c11714b2525aeeda",
-         intel: "3c45cc35f3562c23dce0ca2d0a74e3b63c513b3f532882e89df40c3da5eaf2ef"
+  version "0.4.9"
+  sha256 arm:   "bb34d098b1ec8afd0ff12d50b6232f7716bdc85702db57e50b8b60c144ba5824",
+         intel: "6ebc262dbe83aa6498ffdd0c597923449ecd61fd3e59bd320e83da654cf54e43"
 
   url "https://download.qoder.com/qoder-app/releases/#{version}/Qoder-mac-#{arch}.zip"
   name "Qoder"
