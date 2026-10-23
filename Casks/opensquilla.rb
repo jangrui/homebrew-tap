@@ -1,6 +1,6 @@
 cask "opensquilla" do
-  version "0.5.6"
-  sha256 "3e6709b90c0a816949d5d790bb5d88afec21c581856f82bbcca529b458bb4f80"
+  version "0.5.7"
+  sha256 "19c019f88efae7dd68812b981f092242dc5fc91e8aa11e717039ab63347ac6f0"
 
   url "https://github.com/opensquilla/opensquilla/releases/download/v#{version}/OpenSquilla-#{version}-mac-arm64.dmg"
   name "OpenSquilla"
