@@ -1,8 +1,8 @@
 class CamofoxBrowser < Formula
   desc "面向 AI agent 的反检测浏览器服务器(Camoufox 引擎,REST API + CLI)"
   homepage "https://github.com/redf0x1/camofox-browser"
-  url "https://registry.npmjs.org/camofox-browser/-/camofox-browser-2.4.8.tgz"
-  sha256 "07a76925951cfbacf2650c6c81ef0ca88d26c86f408b7fc1aca480e4e22200a1"
+  url "https://registry.npmjs.org/camofox-browser/-/camofox-browser-2.4.9.tgz"
+  sha256 "0c27d9199937eeb9c6c65964fb969cd98160d62b51fb0a527115067a1b6aba31"
   license "MIT"
 
   livecheck do
