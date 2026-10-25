@@ -14,7 +14,7 @@ cask "mouser" do
 
   name "Mouser"
   desc "Logitech Options+ 开源替代品,HID++ 鼠标按键重映射 + 按应用配置"
-  homepage "https://github.com/TomBadash/Mouser"
+  homepage "https://github.com/TomBadash/Mouser/"
 
   livecheck do
     url :url

@@ -8,7 +8,7 @@ cask "easycliproxyapi" do
   url "https://github.com/router-for-me/EasyCLIProxyAPI/releases/download/v#{version}/EasyCLIProxyAPI-v#{version}-Darwin-#{arch}.dmg"
   name "EasyCLIProxyAPI"
   desc "CLIProxyAPI 桌面端,自动配置主流 AI Agent(Claude/Codex 等)的 API 代理网关 GUI"
-  homepage "https://github.com/router-for-me/EasyCLIProxyAPI"
+  homepage "https://github.com/router-for-me/EasyCLIProxyAPI/"
 
   livecheck do
     url :url

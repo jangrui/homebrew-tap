@@ -6,6 +6,7 @@ cask "kite" do
          intel: "8aa56fb58146403a9e1bea4758ce478a8076ffb4402df9e7808caca941632861"
 
   url "https://github.com/eryajf/kite-desktop/releases/download/v#{version}/Kite-v#{version}-macos-#{arch}.dmg"
+  name "Kite"
   desc "基于 Wails v3 的 K8S 多集群管理桌面工具"
   homepage "https://kite-desktop.eryajf.net/"
 
@@ -16,11 +17,11 @@ cask "kite" do
 
   depends_on :macos
 
-  app "Kite.app"
+  app "kite.app"
 
   postflight_steps do
     run "/usr/bin/xattr",
-        args: ["-rsd", "com.apple.quarantine", "{{appdir}}/Kite.app"]
+        args: ["-rsd", "com.apple.quarantine", "{{appdir}}/kite.app"]
   end
 
   zap trash: [

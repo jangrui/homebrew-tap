@@ -30,6 +30,7 @@ brew uninstall <name>
 |---|---|---|
 | [deepseek-harness](./Casks/deepseek-harness.rb) | DeepSeek Harness 官方桌面客户端,AI Agent 开发工作台,双架构 | [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) |
 | [easycliproxyapi](./Casks/easycliproxyapi.rb) | EasyCLIProxyAPI 桌面端,CLIProxyAPI 的 GUI + 主流 AI Agent(Claude/Codex 等)自动配置工具 | [router-for-me/EasyCLIProxyAPI](https://github.com/router-for-me/EasyCLIProxyAPI) |
+| [kite](./Casks/kite.rb) | 基于 Wails v3 的 K8S 多集群管理桌面工具,双架构 | [eryajf/kite-desktop](https://github.com/eryajf/kite-desktop) |
 | [maccalendar](./Casks/maccalendar.rb) | 离线 macOS 菜单栏日历,支持中国农历/节假日/系统日程 | [bylinxx/MacCalendar](https://github.com/bylinxx/MacCalendar) |
 | [magpie](./Casks/magpie.rb) | 开源本地 AI 网关,让 Claude Code/Codex 等 Agent 用任意模型供应商,订阅共享 + 智能路由 + 故障转移,双架构 | [yetone/magpie](https://github.com/yetone/magpie) |
 | [marvis](./Casks/marvis.rb) | 腾讯 Marvis 马维斯,操作系统层级 AI 助手(本地知识库 + 跨端操控),仅 arm64 | [marvis.qq.com](https://marvis.qq.com/) |

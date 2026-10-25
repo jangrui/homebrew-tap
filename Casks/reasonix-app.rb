@@ -13,7 +13,7 @@ cask "reasonix-app" do
     regex(/^desktop-v?(\d+(?:\.\d+)+)$/i)
   end
 
-  depends_on :macos
+  depends_on macos: :ventura
 
   app "Reasonix.app"
 

@@ -4,8 +4,8 @@ cask "codexsplit" do
 
   url "https://github.com/AITabby/opencodex/releases/download/v#{version}/CodexSplit-#{version}-arm64.dmg"
   name "CodexSplit"
-  desc "Codex Desktop 本地 AI 工作台,网关、语音、会话管理、第三方模型与 Agent 工具,仅 arm64"
-  homepage "https://github.com/AITabby/opencodex"
+  desc "Codex Desktop 本地 AI 工作台,网关、语音、会话管理、第三方模型与 Agent 工具"
+  homepage "https://github.com/AITabby/opencodex/"
 
   livecheck do
     url :url

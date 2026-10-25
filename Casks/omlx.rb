@@ -13,13 +13,13 @@ cask "omlx" do
   end
 
   name "oMLX"
-  desc "LLM inference server with continuous batching and SSD caching for Apple Silicon"
+  desc "Apple Silicon 本地 LLM 推理服务器,连续批处理 + SSD 分层 KV 缓存"
   homepage "https://omlx.ai/"
 
   livecheck do
     url "https://github.com/jundot/omlx/releases"
-    regex(/\Av?(\d+(?:\.\d+)+)\Z/)
     strategy :github_releases
+    regex(/\Av?(\d+(?:\.\d+)+)\Z/)
   end
 
   depends_on arch: :arm64
