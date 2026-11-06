@@ -13,8 +13,6 @@ brew install --cask maccalendar
 
 # 安装 formula
 brew install wps365-cli
-brew install camofox-browser
-brew services start camofox-browser   # REST API: http://localhost:9377
 
 # 升级 / 重装 / 卸载
 brew upgrade <name>
@@ -48,9 +46,9 @@ brew uninstall <name>
 | [qoder](./Casks/qoder.rb) | 阿里 Qoder 国际版,以编程智能体为核心的智能体工作空间(qoder-cn 的海外版) | [qoder.com](https://qoder.com/) |
 | [qoder-cn](./Casks/qoder-cn.rb) | 阿里云全新 Qoder CN,以编程智能体为核心的智能体工作空间 | [qoder.cn](https://qoder.cn/) |
 | [qoder-cn-ide](./Casks/qoder-cn-ide.rb) | Qoder CN IDE(原通义灵码),为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
-| [quiet-md](./Casks/quiet-md.rb) | Quiet.md 原生极速笔记应用(Rust + GPUI),本地优先,兼容飞书 DocxXML,仅 arm64 | [s1dashu/quiet-md](https://github.com/s1dashu/quiet-md) |
 | [qoderwork-cn](./Casks/qoderwork-cn.rb) | QoderWork CN,本地运行、自主规划、安全可控的 AI 工作搭子(上游已停更,新用户建议 qoder-cn) | [qoder.com.cn](https://qoder.com.cn/) |
 | [qoderwake-cn](./Casks/qoderwake-cn.rb) | QoderWake CN,全天在线的数字员工 | [qoder.com.cn](https://qoder.com.cn/) |
+| [quiet-md](./Casks/quiet-md.rb) | Quiet.md 原生极速笔记应用(Rust + GPUI),本地优先,兼容飞书 DocxXML,仅 arm64 | [s1dashu/quiet-md](https://github.com/s1dashu/quiet-md) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
 | [reasonix-app](./Casks/reasonix-app.rb) | Reasonix Desktop,DeepSeek 原生 AI coding agent 桌面端(prefix-cache 稳定性设计) | [esengine/DeepSeek-Reasonix](https://github.com/esengine/DeepSeek-Reasonix) |
 | [recordly](./Casks/recordly.rb) | Recordly 创作者向屏幕录制工具,自动缩放、光标特效、背景与标注,免剪辑直出成品视频 | [recordly.dev](https://recordly.dev/) |
@@ -71,7 +69,6 @@ brew uninstall <name>
 | 名称 | 说明 | 上游 |
 |---|---|---|
 | [wps365-cli](./Formula/wps365-cli.rb) | WPS 365 命令行客户端(Rust 预编译二进制) | [wps365-open/cli](https://github.com/wps365-open/cli) |
-| [camofox-browser](./Formula/camofox-browser.rb) | 面向 AI agent 的反检测浏览器服务器,Camoufox 引擎 + REST API + CLI | [redf0x1/camofox-browser](https://github.com/redf0x1/camofox-browser) |
 | [qoder-cli-cn](./Formula/qoder-cli-cn.rb) | Qoder CN CLI,终端原生的 AI 编程搭档(预编译二进制) | [qoder.com.cn](https://qoder.com.cn/) |
 | [lark-cli](./Formula/lark-cli.rb) | 飞书/Lark 官方命令行工具(预编译二进制) | [larksuite/cli](https://github.com/larksuite/cli) |
 | [omniroute](./Formula/omniroute.rb) | OmniRoute CLI,统一 AI 网关,聚合 160+ 提供商到单一 OpenAI 兼容端点(Next.js standalone + 原生模块) | [diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute) |
