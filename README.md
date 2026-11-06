@@ -48,6 +48,7 @@ brew uninstall <name>
 | [qoder](./Casks/qoder.rb) | 阿里 Qoder 国际版,以编程智能体为核心的智能体工作空间(qoder-cn 的海外版) | [qoder.com](https://qoder.com/) |
 | [qoder-cn](./Casks/qoder-cn.rb) | 阿里云全新 Qoder CN,以编程智能体为核心的智能体工作空间 | [qoder.cn](https://qoder.cn/) |
 | [qoder-cn-ide](./Casks/qoder-cn-ide.rb) | Qoder CN IDE(原通义灵码),为真实软件开发打造的智能体自主开发工作台 | [qoder.com.cn](https://qoder.com.cn/) |
+| [quiet-md](./Casks/quiet-md.rb) | Quiet.md 原生极速笔记应用(Rust + GPUI),本地优先,兼容飞书 DocxXML,仅 arm64 | [s1dashu/quiet-md](https://github.com/s1dashu/quiet-md) |
 | [qoderwork-cn](./Casks/qoderwork-cn.rb) | QoderWork CN,本地运行、自主规划、安全可控的 AI 工作搭子(上游已停更,新用户建议 qoder-cn) | [qoder.com.cn](https://qoder.com.cn/) |
 | [qoderwake-cn](./Casks/qoderwake-cn.rb) | QoderWake CN,全天在线的数字员工 | [qoder.com.cn](https://qoder.com.cn/) |
 | [qwen](./Casks/qwen.rb) | Alibaba Qwen(通义千问)国际版桌面端,Qwen Studio 多模态 AI 助手 | [qwen.ai](https://qwen.ai) |
