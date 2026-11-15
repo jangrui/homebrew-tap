@@ -1,6 +1,6 @@
 cask "pi-agent" do
-  version "0.8.5"
-  sha256 "025b0837e7900c8c6bdbf7260ccc4b2131e4cfd7a7fc6c155d55550c86dd7f04"
+  version "0.8.6"
+  sha256 "4901add68d5f128b27c4a3bf654f94d6e8125e4df8ca91b55cf79a23ef057109"
 
   url "https://github.com/abcwyc/pi-agent-desktop/releases/download/v#{version}/Pi.Agent_#{version}_aarch64.dmg"
   name "Pi Agent"
