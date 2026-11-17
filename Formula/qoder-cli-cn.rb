@@ -1,7 +1,7 @@
 class QoderCliCn < Formula
   desc "终端原生的 AI 编程搭档,也是可被集成的智能体引擎"
   homepage "https://qoder.com.cn/"
-  version "1.1.89"
+  version "1.1.90"
 
   livecheck do
     url "https://static.qoder.com.cn/qoder-cli-cn/channels/manifest.json"
@@ -13,22 +13,22 @@ class QoderCliCn < Formula
   on_macos do
     on_arm do
       url "https://static.qoder.com.cn/qoder-cli-cn/releases/#{version}/qoderclicn-darwin-arm64.tar.gz"
-      sha256 "3b472dfe45b55442941c4d91ef4d3cdbbe8db9ab8e622be2c9116c739b45884f"
+      sha256 "902604ad4db299ceefadb9ea49f6607944690507525d60a74d23637854c10f88"
     end
     on_intel do
       url "https://static.qoder.com.cn/qoder-cli-cn/releases/#{version}/qoderclicn-darwin-x64.tar.gz"
-      sha256 "9370c6dbeedf77e38affe27a5a6898dd6175d054c47086aebaa80d6d1e44964b"
+      sha256 "55c0bca6d7423b302c0a6a64bb1a1d5e54bdb310a22e910875ea8e237b21985a"
     end
   end
 
   on_linux do
     on_arm do
       url "https://static.qoder.com.cn/qoder-cli-cn/releases/#{version}/qoderclicn-linux-arm64.tar.gz"
-      sha256 "c27b678b65096316f0762b19ad8eb2455eca5a79d67557b1a7c7489922886c0d"
+      sha256 "020b81f0ac650c94c8486adbe4b398bae96b7c80d09eeee1f1de69107cd6e2c7"
     end
     on_intel do
       url "https://static.qoder.com.cn/qoder-cli-cn/releases/#{version}/qoderclicn-linux-x64.tar.gz"
-      sha256 "85ba1f24c28c1fdeace69191d03d4b5fdfb6ac9b7e41b9528d4656bd2f975f81"
+      sha256 "8ddb2c3cb912976b66799d38abc515c34c367facede82deab135f02f96b6626b"
     end
   end
 
