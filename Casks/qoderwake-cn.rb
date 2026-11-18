@@ -1,9 +1,9 @@
 cask "qoderwake-cn" do
   arch arm: "arm64", intel: "amd64"
 
-  version "1.2.18-cn"
-  sha256 arm:   "ad74758952ffe53d22789f4ad042cdc561ad2829453806bec9ed716e77f805cb",
-         intel: "38d5f0ed4756f97e6b252a956ea41df6aaeb0461d3d01cf0d39896f2a933b00f"
+  version "1.2.20-cn"
+  sha256 arm:   "2c72fe216be3afd0cf6ab2ae34f12dcd89c97b468a7df1b087acfc5db7557b79",
+         intel: "e6b2d5544f7f0f65a38430c1717622f8dd55c21d032453c41fcf154569ea2945"
 
   url "https://ide.qoder.com.cn/qoderwake-cn/installers/#{version}/qoderwake-cn_#{version}_darwin_#{arch}.dmg"
   name "QoderWake CN"
