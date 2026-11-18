@@ -1,6 +1,6 @@
 cask "quiet-md" do
-  version "0.1.12"
-  sha256 "a3920ecf80bd97d9ab046f46edaf5f45daf65a2ffa6f64ff646e0d720b755a24"
+  version "0.1.13"
+  sha256 "9a224194402f6fbc6d7864e4962878d4fad57d24ea855bdc0a37d3f1aaa8167a"
 
   url "https://github.com/s1dashu/quiet-md/releases/download/v#{version}/quiet-md-#{version}-macos-arm64.zip"
   name "Quiet.md"
