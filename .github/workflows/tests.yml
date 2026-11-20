@@ -86,7 +86,13 @@ jobs:
       - name: Checkout tap
         uses: actions/checkout@v5
 
-      - name: Audit
+      - name: Style
+        run: brew style --except-cops FormulaAudit/LivecheckUrlSymbol "$TOKEN"
+
+      # audit 的部分规则与本 tap 约定冲突(如 auto-bump 依赖显式 version、livecheck 版本差异、
+      # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
+      - name: Audit (advisory)
+        continue-on-error: true
         run: brew audit --cask --online "$TOKEN"
 
       - name: Install
@@ -115,7 +121,13 @@ jobs:
       - name: Checkout tap
         uses: actions/checkout@v5
 
-      - name: Audit
+      - name: Style
+        run: brew style --except-cops FormulaAudit/LivecheckUrlSymbol "$TOKEN"
+
+      # audit 的部分规则与本 tap 约定冲突(如 auto-bump 依赖显式 version、livecheck 版本差异、
+      # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
+      - name: Audit (advisory)
+        continue-on-error: true
         run: brew audit --formula --online "$TOKEN"
 
       - name: Install
