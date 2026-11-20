@@ -28,7 +28,7 @@ jobs:
       formulae: ${{ steps.detect.outputs.formulae }}
     steps:
       - name: Checkout tap
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -81,10 +81,10 @@ jobs:
       TOKEN: jangrui/tap/${{ matrix.cask }}
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@df4b09108a1de9d6f995fe68f302b3f68bd6d2ef # 2026.07.20.1
+        uses: Homebrew/actions/setup-homebrew@ceec4e8419bb3c97ce96e9dda7738499ed5f869d # 2026.11.14.1
 
       - name: Checkout tap
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Style
         run: brew style --except-cops FormulaAudit/LivecheckUrlSymbol "$TOKEN"
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload audit result
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: audit-cask-${{ matrix.cask }}
           path: audit.tsv
@@ -133,10 +133,10 @@ jobs:
       TOKEN: jangrui/tap/${{ matrix.formula }}
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@df4b09108a1de9d6f995fe68f302b3f68bd6d2ef # 2026.07.20.1
+        uses: Homebrew/actions/setup-homebrew@ceec4e8419bb3c97ce96e9dda7738499ed5f869d # 2026.11.14.1
 
       - name: Checkout tap
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Style
         run: brew style --except-cops FormulaAudit/LivecheckUrlSymbol "$TOKEN"
@@ -157,7 +157,7 @@ jobs:
 
       - name: Upload audit result
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: audit-formula-${{ matrix.os }}-${{ matrix.formula }}
           path: audit.tsv
@@ -180,7 +180,7 @@ jobs:
     steps:
       - name: Download audit results
         continue-on-error: true
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: audit-*
           path: audit
