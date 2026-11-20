@@ -93,16 +93,18 @@ jobs:
       # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
       - name: Audit (advisory)
         run: |
-          # 去掉 GITHUB_ACTIONS,避免 brew 把每个问题发成 ::error 注解;问题改以 warning 形式汇总
+          # 去掉 GITHUB_ACTIONS,避免 brew 把问题发成注解;问题只写入运行的 Summary 页
           set +e
           out=$(env -u GITHUB_ACTIONS brew audit --cask --online "$TOKEN" 2>&1)
           rc=$?
           printf '%s\n' "$out"
           if [ "$rc" -ne 0 ]; then
-            printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* //p' | while IFS= read -r line; do
-              line=${line//%/%25}
-              echo "::warning title=audit (advisory)::${TOKEN##*/}: ${line}"
-            done
+            {
+              echo "### audit 提示:\`${TOKEN##*/}\`${RUNNER_OS:+ ($RUNNER_OS)}"
+              echo ""
+              printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* /- /p'
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
 
@@ -139,16 +141,18 @@ jobs:
       # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
       - name: Audit (advisory)
         run: |
-          # 去掉 GITHUB_ACTIONS,避免 brew 把每个问题发成 ::error 注解;问题改以 warning 形式汇总
+          # 去掉 GITHUB_ACTIONS,避免 brew 把问题发成注解;问题只写入运行的 Summary 页
           set +e
           out=$(env -u GITHUB_ACTIONS brew audit --formula --online "$TOKEN" 2>&1)
           rc=$?
           printf '%s\n' "$out"
           if [ "$rc" -ne 0 ]; then
-            printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* //p' | while IFS= read -r line; do
-              line=${line//%/%25}
-              echo "::warning title=audit (advisory)::${TOKEN##*/}: ${line}"
-            done
+            {
+              echo "### audit 提示:\`${TOKEN##*/}\`${RUNNER_OS:+ ($RUNNER_OS)}"
+              echo ""
+              printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* /- /p'
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
 
