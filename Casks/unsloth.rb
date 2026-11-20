@@ -1,6 +1,6 @@
 cask "unsloth" do
-  version "0.1.920-beta"
-  sha256 "3b32e11ec208064538a49e2337bae0ec02a84b563caf068e6ee647bfac78bdbc"
+  version "0.1.921-beta"
+  sha256 "a3cd892aa2561d1c14c7b75d87721702521b365997dc8fba1bd551f70f3527a1"
 
   url "https://github.com/unslothai/unsloth/releases/download/v#{version}/Unsloth-Desktop-MacOS.dmg"
   name "Unsloth Desktop"
