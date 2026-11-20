@@ -448,6 +448,77 @@ jobs:
             echo "✅ $name: 已推到分支 $branch"
           }
 
+          # 上游只给固定地址(url 不带 #{version})、版本由 livecheck 从别处读取的 cask:
+          # 按 arch 展开主 url 重新下载、算 sha256,改写 version 与 sha256。
+          apply_fixed_url_bump() {
+            local name="$1" latest="$2"
+            local cask_path="Casks/${name}.rb"
+            local EMPTY_SHA="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            local url_tpl arm_arch intel_arch
+            url_tpl=$(awk '/livecheck do/{lc=1} lc&&/^  end/{lc=0; next} !lc&&/^  url "/{print; exit}' "$cask_path" \
+              | sed -E 's/^  url "([^"]+)".*/\1/')
+            [ -z "$url_tpl" ] && { echo "⚠️  $name: 找不到主 url"; return 1; }
+            echo "🚀 $name: 固定地址路径 (url=$url_tpl)"
+            arm_arch=$(sed -nE 's/^  arch arm: "([^"]+)", intel: "([^"]+)".*/\1/p' "$cask_path" | head -1)
+            intel_arch=$(sed -nE 's/^  arch arm: "([^"]+)", intel: "([^"]+)".*/\2/p' "$cask_path" | head -1)
+
+            fixed_url_sha() {
+              local u="$1" tmp bytes sha
+              case "$u" in *'#{'*) echo "⚠️  $name: url 里有无法展开的插值: $u" >&2; return 1 ;; esac
+              tmp=$(mktemp)
+              if ! curl -fsSL "$u" -o "$tmp"; then
+                rm -f "$tmp"; echo "⚠️  $name: 下载失败: $u" >&2; return 1
+              fi
+              bytes=$(wc -c < "$tmp" | tr -d '[:space:]')
+              if [ "${bytes:-0}" -eq 0 ]; then
+                rm -f "$tmp"; echo "⚠️  $name: 下载到空文件: $u" >&2; return 1
+              fi
+              sha=$(ruby -rdigest -e 'puts Digest::SHA256.file(ARGV[0]).hexdigest' "$tmp")
+              rm -f "$tmp"
+              [ "$sha" = "$EMPTY_SHA" ] && { echo "⚠️  $name: sha256 是空文件占位: $u" >&2; return 1; }
+              echo "  → $u sha256: $sha ($bytes bytes)" >&2
+              echo "$sha"
+            }
+
+            local arm_sha="" intel_sha="" single_sha=""
+            if [ -n "$arm_arch" ] && [ -n "$intel_arch" ]; then
+              arm_sha=$(fixed_url_sha "${url_tpl//"#{arch}"/"$arm_arch"}") || return 1
+              intel_sha=$(fixed_url_sha "${url_tpl//"#{arch}"/"$intel_arch"}") || return 1
+            else
+              single_sha=$(fixed_url_sha "$url_tpl") || return 1
+            fi
+
+            if ! ruby -e '
+              path, version, arm_sha, intel_sha, single_sha = ARGV
+              src = File.read(path, encoding: "UTF-8")
+              abort "version stanza not found" unless src.sub!(/^  version "[^"]+"/, %Q(  version "#{version}"))
+              ok = if single_sha.empty?
+                src.sub!(/^  sha256 arm:\s+"\h{64}",\n\s+intel: "\h{64}"/,
+                         %Q(  sha256 arm:   "#{arm_sha}",\n         intel: "#{intel_sha}"))
+              else
+                src.sub!(/^  sha256 "\h{64}"/, %Q(  sha256 "#{single_sha}"))
+              end
+              abort "sha256 stanza not found" unless ok
+              File.write(path, src)
+            ' "$cask_path" "$latest" "$arm_sha" "$intel_sha" "$single_sha"; then
+              echo "⚠️  $name: 改写 cask 失败,文件未改动"
+              git checkout -- "$cask_path"
+              return 1
+            fi
+
+            brew style "$cask_path" >/dev/null || { echo "⚠️  $name: brew style 失败,回滚"; git checkout -- "$cask_path"; return 1; }
+
+            local current
+            current=$(git show HEAD:"$cask_path" | grep -E '^  version "' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+            git add "$cask_path" || return 1
+            git commit -m "auto-bump($name): $current → $latest" >/dev/null || return 1
+            local branch="bump-${name}-${latest}"
+            git checkout -B "$branch" || return 1
+            push_branch "$branch" >/dev/null || return 1
+            git checkout main >/dev/null || return 1
+            echo "✅ $name: 已推到分支 $branch"
+          }
+
           apply_multiarch_formula_bump() {
             local name="$1" latest="$2"
             local formula_path="Formula/${name}.rb"
@@ -680,7 +751,10 @@ jobs:
 
             if [ "$kind" = "cask" ] && grep -qE '^  on_(catalina|big_sur|monterey|ventura|sonoma|sequoia|tahoe)' "Casks/${name}.rb"; then
               apply_os_split_cask_bump "$name" "$latest" || return 1
-            elif [ "$kind" = "cask" ] && ! grep -qE 'url "[^"]*#\{version\}' "Casks/${name}.rb"; then
+            elif [ "$kind" = "cask" ] && ! grep -qE 'url "[^"]*#\{version' "Casks/${name}.rb" \
+                 && ! grep -q 'strategy :electron_builder' "Casks/${name}.rb"; then
+              apply_fixed_url_bump "$name" "$latest" || return 1
+            elif [ "$kind" = "cask" ] && ! grep -qE 'url "[^"]*#\{version' "Casks/${name}.rb"; then
               apply_electron_builder_bump "$name" "$latest" || return 1
             elif [ "$kind" = "formula" ] && [ "$(awk '/livecheck do/{lc=1} lc&&/^  end/{lc=0; next} !lc&&/^[[:space:]]+url "/{n++} END{print n+0}' "Formula/${name}.rb")" -gt 1 ]; then
               apply_multiarch_formula_bump "$name" "$latest" || return 1
