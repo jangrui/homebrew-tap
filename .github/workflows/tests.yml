@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload audit result
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: audit-cask-${{ matrix.cask }}
           path: audit.tsv
@@ -157,7 +157,7 @@ jobs:
 
       - name: Upload audit result
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: audit-formula-${{ matrix.os }}-${{ matrix.formula }}
           path: audit.tsv
@@ -180,7 +180,7 @@ jobs:
     steps:
       - name: Download audit results
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: audit-*
           path: audit
