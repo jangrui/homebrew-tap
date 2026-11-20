@@ -1,9 +1,9 @@
 cask "minimax-design" do
   arch arm: "arm64", intel: "x64"
 
-  version "4.0.16"
-  sha256 arm:   "0338c56c33e39f9065dafa9e71ee0b0482bab70d40804f12032d1c68623477c9",
-         intel: "6daaed2408e0345992dfa38c431445aff49c64c091bc02c26cadb0e1d0b1473c"
+  version "4.0.17"
+  sha256 arm:   "e29b9b0e8cbedd13d2e6e21cf202fcc2659f17679fb29cdd7b2c96e8fdb08dbf",
+         intel: "1b2eed5214b3bf9fe6aa57bc33fdaad16b732d280e2f84aaebba49cc54c1cd1d"
 
   url "https://filecdn.minimax.chat/public/minimax-hub/release/domestic/MiniMax%20Design-#{version}-#{arch}.dmg"
   name "MiniMax Design"
