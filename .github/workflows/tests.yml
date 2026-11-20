@@ -92,8 +92,19 @@ jobs:
       # audit 的部分规则与本 tap 约定冲突(如 auto-bump 依赖显式 version、livecheck 版本差异、
       # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
       - name: Audit (advisory)
-        continue-on-error: true
-        run: brew audit --cask --online "$TOKEN"
+        run: |
+          # 去掉 GITHUB_ACTIONS,避免 brew 把每个问题发成 ::error 注解;问题改以 warning 形式汇总
+          set +e
+          out=$(env -u GITHUB_ACTIONS brew audit --cask --online "$TOKEN" 2>&1)
+          rc=$?
+          printf '%s\n' "$out"
+          if [ "$rc" -ne 0 ]; then
+            printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* //p' | while IFS= read -r line; do
+              line=${line//%/%25}
+              echo "::warning title=audit (advisory)::${TOKEN##*/}: ${line}"
+            done
+          fi
+          exit 0
 
       - name: Install
         run: brew install --cask --verbose "$TOKEN"
@@ -127,8 +138,19 @@ jobs:
       # audit 的部分规则与本 tap 约定冲突(如 auto-bump 依赖显式 version、livecheck 版本差异、
       # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
       - name: Audit (advisory)
-        continue-on-error: true
-        run: brew audit --formula --online "$TOKEN"
+        run: |
+          # 去掉 GITHUB_ACTIONS,避免 brew 把每个问题发成 ::error 注解;问题改以 warning 形式汇总
+          set +e
+          out=$(env -u GITHUB_ACTIONS brew audit --formula --online "$TOKEN" 2>&1)
+          rc=$?
+          printf '%s\n' "$out"
+          if [ "$rc" -ne 0 ]; then
+            printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* //p' | while IFS= read -r line; do
+              line=${line//%/%25}
+              echo "::warning title=audit (advisory)::${TOKEN##*/}: ${line}"
+            done
+          fi
+          exit 0
 
       - name: Install
         run: brew install --formula --verbose "$TOKEN"
