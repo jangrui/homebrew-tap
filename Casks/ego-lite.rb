@@ -5,12 +5,20 @@ cask "ego-lite" do
   sha256 arm:   "96fc876664d191f593ef90566e32a575166d78c0b942e6eb1014d905bfb261cc",
          intel: "cb2f5de2ba596c659121d52ec3ba73c9018f7252a177a3bf6e2ba691c8f4f78b"
 
-  # 上游 dmg 文件名带随机后缀(非版本号),发新版时需同步更新此处
-  url "https://cdn.ego.app/setup/macos/#{arch}/egolite-Y7MbxKIuhzFB.dmg"
+  url "https://cdn.ego.app/setup/macos/#{arch}/egolite.dmg"
   name "ego lite"
   desc "为 AI Agent 打造的浏览器自动化浏览器,共享已登录状态,提供 ego-browser 命令"
   homepage "https://lite.ego.app/"
 
+  # 固定地址,版本号来自 CDN 响应头
+  livecheck do
+    url :url
+    strategy :header_match do |headers|
+      headers["x-amz-meta-omaha-version"]
+    end
+  end
+
+  auto_updates true
   depends_on macos: :ventura
 
   app "ego lite.app"
