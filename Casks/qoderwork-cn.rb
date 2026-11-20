@@ -1,16 +1,20 @@
 cask "qoderwork-cn" do
   arch arm: "arm64", intel: "x64"
 
-  version :latest
-  sha256 :no_check
+  version "0.9.18"
+  sha256 arm:   "fa9fe77c72ef06a0d0f31e2e5bfad9a0fd8c1ff824a3330f74901d700c53a464",
+         intel: "0dd048a6b41d447022d8f9aaf39c9bfa431b4d98c63efa7762381505eb740be3"
 
   url "https://static.qoder.com.cn/qoder-work-cn/releases/latest/QoderWorkCN-#{arch}.dmg"
   name "QoderWork CN"
   desc "本地运行、自主规划、安全可控的 AI 工作搭子"
   homepage "https://qoder.com.cn/"
 
+  # 固定地址(latest/),版本号来自 electron-builder 的 latest-mac.yml
   livecheck do
-    skip "Upstream only publishes a latest/ URL"
+    url "https://static.qoder.com.cn/qoder-work-cn/releases/latest-mac.yml"
+    strategy :page_match
+    regex(/^version:\s*v?(\d+(?:\.\d+)+)\s*$/i)
   end
 
   depends_on :macos
