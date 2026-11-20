@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 concurrency:
   group: auto-bump
@@ -18,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@df4b09108a1de9d6f995fe68f302b3f68bd6d2ef # 2026.07.20.1
+        uses: Homebrew/actions/setup-homebrew@ceec4e8419bb3c97ce96e9dda7738499ed5f869d # 2026.11.14.1
 
       - name: Checkout tap
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Configure Git
         run: |
@@ -160,6 +161,44 @@ jobs:
             status=$(gh pr view "$pr_ref" --json state,mergeStateStatus,mergedAt,mergeCommit,autoMergeRequest --jq '[.state,.mergeStateStatus,(.mergedAt // ""),(.mergeCommit.oid // ""),(.autoMergeRequest != null)] | @tsv' 2>/dev/null || true)
             echo "❌ $pr_ref: 自动合并失败,PR 状态: ${status:-unknown}"
             return 1
+          }
+
+          # 在 macOS runner 上跑 tests.yml(audit + 安装)验证 bump 分支,通过才允许合并。
+          # GITHUB_TOKEN 创建的 PR 不会触发 pull_request 工作流,所以这里用 workflow_dispatch 主动触发并等待结果。
+          verify_branch() {
+            local kind="$1" name="$2" branch="$3" head="$4" pr_url="$5"
+            local path="Casks/${name}.rb"; [ "$kind" = "formula" ] && path="Formula/${name}.rb"
+            local since run_id="" state="" i run_url
+            since=$(date -u -d '-2 min' +%Y-%m-%dT%H:%M:%SZ)
+            echo "🧪 $name: 触发 tests.yml 验证分支 $branch"
+            gh workflow run tests.yml --ref "$branch" -f packages="$path" || { echo "❌ $name: 无法触发 tests.yml"; return 1; }
+            for i in $(seq 1 24); do
+              sleep 5
+              run_id=$(gh run list --workflow tests.yml --branch "$branch" --event workflow_dispatch --limit 20 \
+                --json databaseId,headSha,createdAt \
+                --jq "[.[] | select(.headSha == \"$head\" and .createdAt >= \"$since\")] | .[0].databaseId // empty" 2>/dev/null || true)
+              [ -n "$run_id" ] && break
+            done
+            [ -n "$run_id" ] || { echo "❌ $name: 2 分钟内未找到 tests.yml 运行记录"; return 1; }
+            run_url="https://github.com/${repo_name}/actions/runs/${run_id}"
+            echo "⏳ $name: 等待验证结果 $run_url"
+            for i in $(seq 1 120); do
+              state=$(gh run view "$run_id" --json status,conclusion --jq '[.status,.conclusion] | @tsv' 2>/dev/null || true)
+              [[ "$state" == completed$'\t'* ]] && break
+              sleep 30
+            done
+            case "$state" in
+              completed$'\t'success)
+                echo "✅ $name: 验证通过"
+                return 0 ;;
+              completed$'\t'*)
+                echo "❌ $name: 验证失败(${state#*$'\t'}),PR 保持打开不合并: $run_url"
+                gh pr comment "$pr_url" --body "❌ 自动验证(audit + 安装)未通过,本 PR 暂不合并:${run_url}" >/dev/null 2>&1 || true
+                return 1 ;;
+              *)
+                echo "❌ $name: 等待验证超时(60 分钟),PR 保持打开不合并: $run_url"
+                return 1 ;;
+            esac
           }
 
           sweep_superseded_prs() {
@@ -761,7 +800,8 @@ jobs:
             else
               echo "🚀 $name: $current → $latest,开始 bump"
               style_flag="--no-style"; [ "$kind" = "formula" ] && style_flag=""
-              local dl_attempt bump_ok=""
+              local dl_attempt bump_ok="" bump_log
+              bump_log=$(mktemp)
               for dl_attempt in 1 2 3; do
                 if brew "$bump_cmd" "$name" \
                   --version="$latest" \
@@ -769,11 +809,16 @@ jobs:
                   --no-audit \
                   $style_flag \
                   --write-only \
-                  --commit; then
+                  --commit 2>&1 | tee "$bump_log"; then
                   bump_ok=1
                   break
                 fi
                 echo "⚠️  $bump_cmd --write-only 失败(第 $dl_attempt/3 次),见上方日志"
+                if grep -qE 'returned error: (404|410)' "$bump_log"; then
+                  echo "❌ $name: 下载地址 404,多半是上游改了资产文件名,需要手动更新 url 模板;不再重试"
+                  sync_main || { echo "❌ $name: 无法重置 main"; return 1; }
+                  break
+                fi
                 sync_main || { echo "❌ $name: 重试前无法重置 main"; return 1; }
                 [ "$dl_attempt" -lt 3 ] && sleep $((dl_attempt * 30))
               done
@@ -810,6 +855,7 @@ jobs:
                 return 1
               fi
             fi
+            verify_branch "$kind" "$name" "$branch" "$expected_head" "$pr_url" || return 1
             merge_pr "$pr_url" || { echo "❌ 自动合并未成功: $pr_url"; return 1; }
             echo "✅ PR 自动合并请求已处理"
             bump_status="updated"

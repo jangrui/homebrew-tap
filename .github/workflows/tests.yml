@@ -1,0 +1,203 @@
+name: Tests
+
+on:
+  pull_request:
+    paths:
+      - "Casks/**"
+      - "Formula/**"
+      - ".github/workflows/tests.yml"
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "要测试的包(空格分隔,如 Casks/foo.rb Formula/bar.rb;填 all 测试全部;留空则测试相对 main 的改动)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      casks: ${{ steps.detect.outputs.casks }}
+      formulae: ${{ steps.detect.outputs.formulae }}
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed packages
+        id: detect
+        env:
+          INPUT_PACKAGES: ${{ inputs.packages }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_PACKAGES:-}" ]; then
+            if [ "$INPUT_PACKAGES" = "all" ]; then
+              files=$(ls Casks/*.rb Formula/*.rb)
+            else
+              files=$(printf '%s\n' $INPUT_PACKAGES)
+            fi
+          else
+            base="${BASE_SHA:-}"
+            if [ -z "$base" ]; then
+              git fetch --quiet origin main
+              base=$(git merge-base origin/main HEAD)
+            fi
+            changed=$(git diff --name-only --diff-filter=AMR "$base" HEAD)
+            if printf '%s\n' "$changed" | grep -qx '.github/workflows/tests.yml'; then
+              echo "测试工作流本身有改动,测试全部包"
+              files=$(ls Casks/*.rb Formula/*.rb)
+            else
+              files="$changed"
+            fi
+          fi
+          to_json() { { grep -E "^$1/[^/]+\.rb$" || true; } | xargs -r -n1 basename | sed 's/\.rb$//' | jq -R . | jq -sc .; }
+          casks=$(printf '%s\n' "$files" | to_json Casks)
+          formulae=$(printf '%s\n' "$files" | to_json Formula)
+          echo "casks=${casks}" >> "$GITHUB_OUTPUT"
+          echo "formulae=${formulae}" >> "$GITHUB_OUTPUT"
+          echo "Casks: ${casks}"
+          echo "Formulae: ${formulae}"
+
+  cask:
+    needs: detect
+    if: needs.detect.outputs.casks != '[]'
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cask: ${{ fromJSON(needs.detect.outputs.casks) }}
+    env:
+      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      TOKEN: jangrui/tap/${{ matrix.cask }}
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@ceec4e8419bb3c97ce96e9dda7738499ed5f869d # 2026.11.14.1
+
+      - name: Checkout tap
+        uses: actions/checkout@v7
+
+      - name: Style
+        run: brew style --except-cops FormulaAudit/LivecheckUrlSymbol "$TOKEN"
+
+      # audit 的部分规则与本 tap 约定冲突(如 auto-bump 依赖显式 version、livecheck 版本差异、
+      # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
+      - name: Audit (advisory)
+        run: |
+          # 去掉 GITHUB_ACTIONS,避免 brew 把问题发成注解;问题由 report job 汇总成一张表
+          set +e
+          : > audit.tsv
+          out=$(env -u GITHUB_ACTIONS brew audit --cask --online "$TOKEN" 2>&1)
+          printf '%s\n' "$out"
+          printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* //p' | while IFS= read -r line; do
+            printf '%s\t%s\t%s\n' "${TOKEN##*/}" "$RUNNER_OS" "$line" >> audit.tsv
+          done
+          exit 0
+
+      - name: Upload audit result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: audit-cask-${{ matrix.cask }}
+          path: audit.tsv
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Install
+        run: brew install --cask --verbose "$TOKEN"
+
+      - name: Uninstall
+        run: brew uninstall --cask --force "$TOKEN"
+
+  formula:
+    needs: detect
+    if: needs.detect.outputs.formulae != '[]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        formula: ${{ fromJSON(needs.detect.outputs.formulae) }}
+    env:
+      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      TOKEN: jangrui/tap/${{ matrix.formula }}
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@ceec4e8419bb3c97ce96e9dda7738499ed5f869d # 2026.11.14.1
+
+      - name: Checkout tap
+        uses: actions/checkout@v7
+
+      - name: Style
+        run: brew style --except-cops FormulaAudit/LivecheckUrlSymbol "$TOKEN"
+
+      # audit 的部分规则与本 tap 约定冲突(如 auto-bump 依赖显式 version、livecheck 版本差异、
+      # GitHub 资产可达性误报),只作提示不拦截;拦截以安装/测试为准。
+      - name: Audit (advisory)
+        run: |
+          # 去掉 GITHUB_ACTIONS,避免 brew 把问题发成注解;问题由 report job 汇总成一张表
+          set +e
+          : > audit.tsv
+          out=$(env -u GITHUB_ACTIONS brew audit --formula --online "$TOKEN" 2>&1)
+          printf '%s\n' "$out"
+          printf '%s\n' "$out" | sed -E 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\* //p' | while IFS= read -r line; do
+            printf '%s\t%s\t%s\n' "${TOKEN##*/}" "$RUNNER_OS" "$line" >> audit.tsv
+          done
+          exit 0
+
+      - name: Upload audit result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: audit-formula-${{ matrix.os }}-${{ matrix.formula }}
+          path: audit.tsv
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Install
+        run: brew install --formula --verbose "$TOKEN"
+
+      - name: Test
+        run: brew test --verbose "$TOKEN"
+
+      - name: Uninstall
+        run: brew uninstall --formula --force "$TOKEN"
+
+  report:
+    needs: [cask, formula]
+    if: always() && (needs.cask.result != 'skipped' || needs.formula.result != 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download audit results
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: audit-*
+          path: audit
+          merge-multiple: false
+
+      - name: Write audit summary
+        run: |
+          shopt -s nullglob globstar
+          rows=$(cat audit/**/audit.tsv 2>/dev/null | sort -u)
+          {
+            echo "## audit 提示(仅供参考,不影响结果)"
+            echo ""
+            if [ -z "$rows" ]; then
+              echo "无"
+            else
+              echo "| 包 | 系统 | 问题 |"
+              echo "|---|---|---|"
+              printf '%s\n' "$rows" | awk -F'\t' '{ gsub(/\|/, "\\|", $3); printf "| `%s` | %s | %s |\n", $1, $2, $3 }'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
