@@ -26,11 +26,11 @@ cask "ego-lite" do
   uninstall quit: "com.citrolabs.ego.lite"
 
   zap trash: [
+    "~/.local/bin/ego-browser",
     "~/Library/Application Support/ego lite",
     "~/Library/Caches/com.citrolabs.ego.lite",
     "~/Library/HTTPStorages/com.citrolabs.ego.lite",
     "~/Library/Preferences/com.citrolabs.ego.lite.plist",
     "~/Library/Saved Application State/com.citrolabs.ego.lite.savedState",
-    "~/.local/bin/ego-browser",
   ]
 end
