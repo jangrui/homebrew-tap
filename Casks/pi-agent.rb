@@ -1,8 +1,8 @@
 cask "pi-agent" do
-  version "0.8.6"
-  sha256 "4901add68d5f128b27c4a3bf654f94d6e8125e4df8ca91b55cf79a23ef057109"
+  version "0.8.7"
+  sha256 "50ade76f02f604d695afc24e95497da0e1381728b9102c385a3132cb1d909cf6"
 
-  url "https://github.com/abcwyc/pi-agent-desktop/releases/download/v#{version}/Pi.Agent_#{version}_aarch64.dmg"
+  url "https://github.com/abcwyc/pi-agent-desktop/releases/download/v#{version}/Pi.Agent_#{version}_macOS_aarch64.dmg"
   name "Pi Agent"
   desc "跨平台 AI 编码 Agent 桌面客户端,免环境配置、免终端命令,开箱即用"
   homepage "https://pi.348580.xyz/"
