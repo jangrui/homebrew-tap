@@ -1,11 +1,6 @@
 name: Tests
 
 on:
-  pull_request:
-    paths:
-      - "Casks/**"
-      - "Formula/**"
-      - ".github/workflows/tests.yml"
   workflow_dispatch:
     inputs:
       packages:
@@ -18,7 +13,6 @@ permissions:
 
 concurrency:
   group: tests-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   detect:
