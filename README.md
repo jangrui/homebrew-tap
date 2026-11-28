@@ -39,6 +39,7 @@ brew uninstall <name>
 | [omlx](./Casks/omlx.rb) | oMLX,Apple Silicon 本地 LLM 推理服务器(连续批处理 + SSD 分层 KV 缓存,菜单栏管理),仅 arm64 | [jundot/omlx](https://github.com/jundot/omlx) |
 | [opencodex-app](./Casks/opencodex-app.rb) | OpenCodex 桌面端(Tauri),本地 provider 代理与仪表盘的原生窗口版,带托盘和内置 ocx,universal | [lidge-jun/opencodex](https://github.com/lidge-jun/opencodex) |
 | [openchatcut](./Casks/openchatcut.rb) | 本地优先的对话式 AI 视频编辑器,多轨时间线 + 自然语言剪辑 | [0xsline/OpenChatCut](https://github.com/0xsline/OpenChatCut) |
+| [cfpilot](./Casks/cfpilot.rb) | Cloudflare Workers 代理微内核与真连接优选面板,一键部署 VLESS/Trojan/XHTTP,universal | [xmwengxing/CFPilot](https://github.com/xmwengxing/CFPilot) |
 | [codexsplit](./Casks/codexsplit.rb) | CodexSplit(Codex Desktop)本地 AI 工作台,网关、语音、会话管理、第三方模型与 Agent 工具,仅 arm64 | [AITabby/opencodex](https://github.com/AITabby/opencodex) |
 | [opensquilla](./Casks/opensquilla.rb) | OpenSquilla 桌面端,Token 高效的本地 AI Agent(SquillaRouter 模型路由 + 多工具 + 本地记忆),仅 arm64 | [opensquilla/opensquilla](https://github.com/opensquilla/opensquilla) |
 | [oss-browser](./Casks/oss-browser.rb) | 阿里云 OSS 图形化管理工具(Electron,仅 x64、Apple Silicon 走 Rosetta;未签名,官方 cask 已禁用后的自维护) | [aliyun/oss-browser](https://github.com/aliyun/oss-browser) |
