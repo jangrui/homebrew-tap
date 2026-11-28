@@ -1,9 +1,9 @@
 cask "ego-lite" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.6.3.17"
-  sha256 arm:   "96fc876664d191f593ef90566e32a575166d78c0b942e6eb1014d905bfb261cc",
-         intel: "cb2f5de2ba596c659121d52ec3ba73c9018f7252a177a3bf6e2ba691c8f4f78b"
+  version "0.6.4.22"
+  sha256 arm:   "7ba2cbb488131b4e7c635382ba22272374c41c137c74adf0591703ee6107c7b8",
+         intel: "87b91b44db0fe947854cf5d12368db248dc31644051895ba325bd7fcf9f70cb2"
 
   url "https://cdn.ego.app/setup/macos/#{arch}/egolite.dmg"
   name "ego lite"
